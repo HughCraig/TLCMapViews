@@ -18,6 +18,8 @@ td {
     opacity: 0.9;
     font-family: Arial, Helvetica, sans-serif;
     min-width: 200px;
+    max-height: 95vh;
+    overflow-y: auto;
 }
 
 img.mdicon {
