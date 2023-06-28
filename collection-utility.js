@@ -4,67 +4,6 @@
 class CollectionUtility {
 
     /**
-     * Create the metadata display for a collection.
-     *
-     * @param {jQuery} container
-     *   The jQuery object of the container.
-     * @param {Object} properties
-     *   The collection properties.
-     */
-    static createCollectionMetadataDisplay(container, properties) {
-        if (properties.name && properties.url) {
-            container.append(`<h3><a href="${properties.url}" target="_blank">${CollectionUtility.sanitize(properties.name)}</h3></p>`);
-        }
-        if (properties.description) {
-            container.append(`<p>${CollectionUtility.sanitize(properties.description)}</p>`);
-        }
-        if (properties.warning) {
-            container.append(`<div class="warning-message"><strong>Warning</strong><br />${CollectionUtility.sanitize(properties.warning)}</div>`);
-        }
-        container.append('<div class="legend-container"></div>');
-        let linksHtml = '<p><a href="/guides/views/" target="_blank">Help</a> | <a href="/guides/views/#shareview" target="_blank">Share</a>';
-        if (properties.linkback) {
-            linksHtml += ` | <a href="${properties.linkback}" target="_blank">Linkback</a>`;
-        }
-        linksHtml += '</p>';
-        container.append(linksHtml);
-    }
-
-    /**
-     * Create the info panel element for a layer.
-     *
-     * @param {Object} layerData
-     *   The layer data.
-     * @return {HTMLElement}
-     *   The HTML element of the info panel.
-     */
-    static createLayerInfoPanelElement(layerData) {
-        const propElement = $('<div></div>').css({
-            "padding-left": '13px'
-        });
-        if (layerData.color) {
-            const legend = $('<div class="layer-prop-color"></div>')
-                .css({
-                    "width": '15px',
-                    "height": '15px',
-                    "border-radius": '50%',
-                    "background-color": layerData.color
-                });
-            propElement.append(legend);
-        }
-        if (layerData.description) {
-            propElement.append(`<p>${CollectionUtility.sanitize(layerData.description)}</p>`);
-        }
-        if (layerData.warning) {
-            propElement.append(`<p>${CollectionUtility.sanitize(layerData.warning)}</p>`);
-        }
-        if (layerData.url) {
-            propElement.append(`<p><a target="_blank" href="${layerData.url}">View layer details</a></p>`);
-        }
-        return propElement[0];
-    }
-
-    /**
      * Get the min and max time from an array of layers.
      *
      * @param {Array} layers
