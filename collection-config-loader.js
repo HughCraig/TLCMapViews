@@ -31,6 +31,7 @@ function loadCollectionConfig(urltoload) {
         logo: "./img/tlcmaplogofull_sm50.png",
         titleText: null,
         titleLink: null,
+        clusterColor: null,
         content: null,
         legend: true,
         basemapGallery: true,
@@ -106,6 +107,11 @@ function loadCollectionConfig(urltoload) {
                                     ? info.legend
                                     : true;
                         }
+                    }
+
+                    //Cluster color
+                    if (display.hasOwnProperty("clusterColor")) {
+                        config["clusterColor"] = display.clusterColor;
                     }
 
                     //base map gallery

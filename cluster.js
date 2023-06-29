@@ -67,6 +67,17 @@ require([
                 ],
             };
 
+            if (config.clusterColor) {
+                clusterConfig.symbol = {
+                    type: "simple-marker",
+                    style: "circle",
+                    color: config.clusterColor,
+                    outline: {
+                        color: "white",
+                    },
+                };
+            }
+
             // Pass the updated data with id for each feature to layer
             const blob = new Blob([JSON.stringify(config.data)], {
                 type: "application/json",

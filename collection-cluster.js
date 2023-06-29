@@ -75,6 +75,17 @@
                     ],
                 };
 
+                if (config.clusterColor) {
+                    clusterConfig.symbol = {
+                        type: "simple-marker",
+                        style: "circle",
+                        color: config.clusterColor,
+                        outline: {
+                            color: "white",
+                        },
+                    };
+                }
+
                 if (config.datasetsConfig) {
                     for (let i = 0; i < config.datasetsConfig.length; i++) {
                         const color =
