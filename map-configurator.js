@@ -17,10 +17,17 @@ function loadInfoBlock(config, infoDivExpand, view) {
     view.ui.add(infoDivExpand, "top-right");
 
     //Info logo
-    if (config.logo == null || config.logo === false) {
-        document.querySelector(".mdicon").remove();
-    } else {
-        document.querySelector(".mdicon").src = config.logo;
+    if (config.logo) {
+        let iconElement = document.querySelector(".mdicon");
+        iconElement.src = config.logo;
+
+        if (config.logoLink != null) {
+            let linkElement = document.createElement("a");
+            linkElement.href = config.logoLink;
+            
+            iconElement.parentNode.replaceChild(linkElement, iconElement);
+            linkElement.appendChild(iconElement);
+        }
     }
 
     //Info title

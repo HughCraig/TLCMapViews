@@ -91,7 +91,10 @@
                                     },
                                     symbol: {
                                         type: "simple-line",
-                                        color: "white",
+                                        color: feature.display &&
+                                        feature.display.color
+                                            ? feature.display.color
+                                            : color,
                                         width:
                                             feature.display &&
                                             feature.display.lineWidth

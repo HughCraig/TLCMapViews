@@ -1,34 +1,22 @@
 /**
- * Load user configuration from json file for collections map.
+ * Silimiar to loadConfig() in config.loader.js but Load user configuration for collections map.
+ * It provides default configurations for various elements and overrides them with values
  *
- * @param {String} urltoload . url contains json data
- * @returns config object, contains global set up
- * config.datasetsConfig contains individual dataset configurations
+ * This function handles settings for display options, list pane, base map styles,
+ * and other individual collection configuration.
+ *
+ * config.datasetsConfig contains individual dataset configurations. it contains id(distinct id for each dataset), name(name of dataset),
+ * layerContent (HTML content that will shown on the list pane), config(invidual dataset config loaded from loadconfig() )
+ *
+ * @param {string} urltoload - The URL to load the configuration file from.
+ * @return {Promise<object>} A promise that resolves to the final configuration object.
  */
 
 function loadCollectionConfig(urltoload) {
-    const mapStyles = new Set([
-        "satellite",
-        "hybrid",
-        "oceans",
-        "osm",
-        "terrain",
-        "dark-gray-vector",
-        "gray-vector",
-        "streets-vector",
-        "streets-night-vector",
-        "streets-navigation-vector",
-        "topo-vector",
-        "streets-relief-vector",
-        "topo-vector",
-        "streets-vector",
-        "dark-gray-vector",
-        "gray-vector",
-    ]);
-
     let config = {
         infoDisplay: "default",
         logo: "./img/tlcmaplogofull_sm50.png",
+        logoLink: "https://www.tlcmap.org",
         titleText: null,
         titleLink: null,
         clusterColor: null,
@@ -73,8 +61,9 @@ function loadCollectionConfig(urltoload) {
                         }
 
                         //logo
-                        if (info.hasOwnProperty("logo")) {
-                            config["logo"] = !info.logo ? null : info.logo;
+                        if (info.hasOwnProperty("logo") && typeof info.logo === 'string') {
+                            config["logo"] = info.logo;
+                            config["logoLink"] = null; //Remove logo link if custom logo is provided
                         }
 
                         //title
@@ -123,10 +112,11 @@ function loadCollectionConfig(urltoload) {
                     }
 
                     //base map
-                    if (display.hasOwnProperty("basemap")) {
-                        config["basemap"] = mapStyles.has(display.basemap)
-                            ? display.basemap
-                            : "hybrid";
+                    if (
+                        display.hasOwnProperty("basemap") &&
+                        typeof display.basemap === "string"
+                    ) {
+                        config["basemap"] = getMapStyle(display.basemap);
                     }
 
                     //list pane

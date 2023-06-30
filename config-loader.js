@@ -14,28 +14,10 @@
 function loadConfig(urltoload) {
     const defaultBlockedFields = new Set(["tlcMapUniqueId"]);
 
-    const mapStyles = new Set([
-        "satellite",
-        "hybrid",
-        "oceans",
-        "osm",
-        "terrain",
-        "dark-gray-vector",
-        "gray-vector",
-        "streets-vector",
-        "streets-night-vector",
-        "streets-navigation-vector",
-        "topo-vector",
-        "streets-relief-vector",
-        "topo-vector",
-        "streets-vector",
-        "dark-gray-vector",
-        "gray-vector",
-    ]);
-
     let config = {
         infoDisplay: "default",
         logo: "./img/tlcmaplogofull_sm50.png",
+        logoLink: "https://www.tlcmap.org",
         titleText: null,
         titleLink: null,
         titleLinkTarget: "_blank",
@@ -85,8 +67,9 @@ function loadConfig(urltoload) {
                         }
 
                         //logo
-                        if (info.hasOwnProperty("logo")) {
-                            config["logo"] = !info.logo ? null : info.logo;
+                        if (info.hasOwnProperty("logo") && typeof info.logo === 'string') {
+                            config["logo"] = info.logo;
+                            config["logoLink"] = null; //Remove logo link if custom logo is provided
                         }
 
                         //title
@@ -126,10 +109,11 @@ function loadConfig(urltoload) {
                     }
 
                     //base map
-                    if (display.hasOwnProperty("basemap")) {
-                        config["basemap"] = mapStyles.has(display.basemap)
-                            ? display.basemap
-                            : "hybrid";
+                    if (
+                        display.hasOwnProperty("basemap") &&
+                        typeof display.basemap === "string"
+                    ) {
+                        config["basemap"] = getMapStyle(display.basemap);
                     }
 
                     //Color
@@ -577,9 +561,9 @@ function buildPopupContentTable(
         }
 
         let value = properties[key];
-      
+
         // If the value matches URL pattern, convert it into hyperlink.
-        if ( typeof value === 'string' && value.match(urlRegex)) {
+        if (typeof value === "string" && value.match(urlRegex)) {
             value = `<a href="${value}" target="_blank">${value}</a>`;
         } else {
             value = purifyContent(value);
@@ -598,4 +582,34 @@ function buildPopupContentTable(
 
     res += "</table></div>";
     return res;
+}
+
+/**
+ * Validates the given map style against a set of predefined valid styles.
+ * If the provided mapStyle is valid, it is returned; otherwise, "hybrid" is returned as a default value.
+ *
+ * @param {string} mapStyle - The map style to validate.
+ * @returns {string} - The validated map style or "hybrid" if the provided style is not valid.
+ */
+function getMapStyle(mapStyle) {
+    const validMapStyles = new Set([
+        "satellite",
+        "hybrid",
+        "oceans",
+        "osm",
+        "terrain",
+        "dark-gray-vector",
+        "gray-vector",
+        "streets-vector",
+        "streets-night-vector",
+        "streets-navigation-vector",
+        "topo-vector",
+        "streets-relief-vector",
+        "topo-vector",
+        "streets-vector",
+        "dark-gray-vector",
+        "gray-vector",
+    ]);
+
+    return validMapStyles.has(mapStyle) ? mapStyle : "hybrid";
 }
