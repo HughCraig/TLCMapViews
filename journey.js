@@ -82,7 +82,11 @@ require([
                                         feature.display && feature.display.color
                                             ? feature.display.color
                                             : "white",
-                                    width: "2",
+                                    width:
+                                        feature.display &&
+                                        feature.display.lineWidth
+                                            ? feature.display.lineWidth.toString()
+                                            : "2",
                                 },
                             })
                         ),
@@ -101,9 +105,9 @@ require([
             //Not sure why but timeout is needed to avoid the 'AbortError' Promise error.
             //This problem could happens on the original code as well(30% change) which prevent the initial zoom/center setting
             geojsonPointLayer.queryExtent().then(function (results) {
-                setTimeout(function() {
+                setTimeout(function () {
                     view.goTo(results.extent);
-                }, 800);  
+                }, 800);
             });
 
             //Info block

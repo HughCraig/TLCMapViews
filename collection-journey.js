@@ -64,12 +64,6 @@
                             },
                         };
 
-                        const lineSymbol = {
-                            type: "simple-line",
-                            color: "white",
-                            width: "2",
-                        };
-
                         const data = config.datasetsConfig[i].config.data;
 
                         data.features.forEach((feature) => {
@@ -93,9 +87,17 @@
                                         type: "polyline",
                                         paths: feature.geometry.coordinates.map(
                                             (coord) => [coord[0], coord[1]]
-                                        ), // ensure this is in the right format
+                                        ),
                                     },
-                                    symbol: lineSymbol,
+                                    symbol: {
+                                        type: "simple-line",
+                                        color: "white",
+                                        width:
+                                            feature.display &&
+                                            feature.display.lineWidth
+                                                ? feature.display.lineWidth.toString()
+                                                : "2",
+                                    },
                                     attributes: feature.properties,
                                     popupTemplate: template,
                                 });
