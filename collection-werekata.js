@@ -6,14 +6,6 @@
     // Get the base map from the query string.
     const urlParams = new URLSearchParams(window.location.search);
     const urltoload = urlParams.get("load");
-    // Get the query string for layer json request.
-    const sortoption = urlParams.get("sort");
-    let layerQueryString = "";
-    if (sortoption === "end") {
-        layerQueryString = "?sort=end";
-    } else if (sortoption === "start") {
-        layerQueryString = "?sort=start";
-    }
 
     const fly = function () {
         // don't keep flying if you're at the end... or maybe make it loop.. or go back
@@ -103,7 +95,7 @@
 
                         const layer = new GeoJSONLayer({
                             id: config.datasetsConfig[i].id,
-                            url: newurl + layerQueryString,
+                            url: newurl,
                             title: config.datasetsConfig[i].name,
                             copyright:
                                 "Check copyright and permissions of this dataset at http://tlcmap.org/ghap.",

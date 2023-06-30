@@ -6,14 +6,6 @@
     var urlParams = new URLSearchParams(window.location.search);
     var urltoload = urlParams.get("load");
 
-    const sortoption = urlParams.get("sort");
-    let layerQueryString = "";
-    if (sortoption === "end") {
-        layerQueryString = "?sort=end";
-    } else if (sortoption === "start") {
-        layerQueryString = "?sort=start";
-    }
-
     require([
         "esri/Map",
         "esri/layers/GeoJSONLayer",
@@ -40,7 +32,7 @@
                 const newurl = URL.createObjectURL(blob);
 
                 var geojsonLayer = new GeoJSONLayer({
-                    url: newurl + layerQueryString,
+                    url: newurl,
                     copyright:
                         "Check copyright and permissions of this dataset at http://tlcmap.org/ghap.",
                     popupTemplate: loadPopUpTemplate(config),
