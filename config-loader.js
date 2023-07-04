@@ -371,6 +371,7 @@ function purifyContent(content) {
     // Use DOMPurify to purify the tags first.
     content = DOMPurify.sanitize(content, {
         ALLOWED_TAGS: ["p", "a", "strong", "em", "ul", "ol", "li", "div", "br"],
+        ALLOWED_ATTR: ['href', 'target', 'class'],
     });
 
     if (content == null || content === "") {

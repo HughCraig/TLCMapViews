@@ -86,7 +86,7 @@
                                     geometry: {
                                         type: "polyline",
                                         paths: feature.geometry.coordinates.map(
-                                            (coord) => [coord[0], coord[1]]
+                                            (coord) => [parseFloat(coord[0]), parseFloat(coord[1])]
                                         ),
                                     },
                                     symbol: {
