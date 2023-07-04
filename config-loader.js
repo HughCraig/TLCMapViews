@@ -67,7 +67,10 @@ function loadConfig(urltoload) {
                         }
 
                         //logo
-                        if (info.hasOwnProperty("logo") && typeof info.logo === 'string') {
+                        if (
+                            info.hasOwnProperty("logo") &&
+                            typeof info.logo === "string"
+                        ) {
                             config["logo"] = info.logo;
                             config["logoLink"] = null; //Remove logo link if custom logo is provided
                         }
@@ -371,7 +374,7 @@ function purifyContent(content) {
     // Use DOMPurify to purify the tags first.
     content = DOMPurify.sanitize(content, {
         ALLOWED_TAGS: ["p", "a", "strong", "em", "ul", "ol", "li", "div", "br"],
-        ALLOWED_ATTR: ['href', 'target', 'class'],
+        ALLOWED_ATTR: ["href", "target", "class"],
     });
 
     if (content == null || content === "") {
@@ -544,7 +547,7 @@ function buildPopupContentTable(
     }
     const properties = feature.properties;
     var urlPattern =
-        /(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/gi;
+        /^(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})$/gi;
     var urlRegex = new RegExp(urlPattern);
 
     let res = "<div><table class='esri-widget__table'>";
