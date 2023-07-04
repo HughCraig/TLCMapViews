@@ -361,7 +361,7 @@ function loadConfig(urltoload) {
  *
  * This function is designed to allow different attributes for different tags.
  * Specifically, it allows:
- * - the <p>, <strong>, <em>, <ul>, <ol>, <li>, <br> tags with no additional attributes.
+ * - the <p>, <strong>, <em>, <ul>, <ol>, <li>, <br> <table> <tr> <td> <th> <tbody> <thead> <tfoot> tags with no additional attributes.
  * - the <a> tag with 'href' and 'target' attributes.
  * - the <div> tag with 'class' attribute.
  * Invalid tags and attributes will be removed.
@@ -373,7 +373,7 @@ function loadConfig(urltoload) {
 function purifyContent(content) {
     // Use DOMPurify to purify the tags first.
     content = DOMPurify.sanitize(content, {
-        ALLOWED_TAGS: ["p", "a", "strong", "em", "ul", "ol", "li", "div", "br"],
+        ALLOWED_TAGS: ["p", "a", "strong", "em", "ul", "ol", "li", "div", "br", "table", "tr", "td", "th", "tbody", "thead", "tfoot"],
         ALLOWED_ATTR: ["href", "target", "class"],
     });
 
@@ -397,6 +397,13 @@ function purifyContent(content) {
             ol: [],
             li: [],
             br: [],
+            table: [],
+            tr: [],
+            td: [],
+            th: [],
+            tbody: [],
+            thead: [],
+            tfoot: [],
         };
 
         // Get the current node name
