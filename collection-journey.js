@@ -1,219 +1,245 @@
 (function () {
+    // Get the base map from the query string.
+    const urlParams = new URLSearchParams(window.location.search);
+    const urltoload = urlParams.get("load");
 
     // Import ArcGIS JS modules.
     require([
         "esri/Map",
-        "esri/layers/GeoJSONLayer",
         "esri/views/SceneView",
-        "esri/geometry/Extent",
         "esri/widgets/Expand",
         "esri/widgets/BasemapGallery",
-        "esri/core/promiseUtils",
         "esri/widgets/LayerList",
-    ], function (Map, GeoJSONLayer, MapView, Extent, Expand, BasemapGallery, promiseUtils, LayerList) {
+        "esri/layers/GraphicsLayer",
+        "esri/Graphic",
+        "esri/core/promiseUtils",
+        "esri/geometry/Extent",
+    ], function (
+        Map,
+        SceneView,
+        Expand,
+        BasemapGallery,
+        LayerList,
+        GraphicsLayer,
+        Graphic,
+        promiseUtils,
+        Extent
+    ) {
+        loadCollectionConfig(urltoload)
+            .then((config) => {
+                // Initiate collection legend.
+                const legend = new CollectionLegend();
 
-        // Get the base map from the query string.
-        const urlParams = new URLSearchParams(window.location.search);
-        const urltoload = urlParams.get("load");
-        let baselayer = "hybrid";
-        if (urlParams.has("base")) {
-            baselayer = urlParams.get("base");
-        }
+                // Map of layer ID to layer data.
+                const layerDataMap = {};
 
-        // Get the line URL.
-        let lineQueryString = "";
-        const lineoption = urlParams.get('line');
-        if (lineoption === "route") {
-            lineQueryString = "?line=route";
-        } else if (lineoption === "time") {
-            lineQueryString = "?line=time";
-        }
+                // Create array of layer instances.
+                const layers = [];
 
-        // Initiate the color generator.
-        const colorGen = new LegendColorGenerator();
+                if (config.datasetsConfig) {
+                    for (let i = 0; i < config.datasetsConfig.length; i++) {
+                        const color =
+                            config.datasetsConfig[i].layerContent.color;
 
-        // Initiate collection legend.
-        const legend = new CollectionLegend();
+                        legend.addItem(config.datasetsConfig[i].name, color);
 
-        // Map of layer ID to layer data.
-        const layerDataMap = {};
+                        const template = loadPopUpTemplate(
+                            config.datasetsConfig[i].config
+                        ); //Load individual dataset config
 
-        $.get(urltoload).done(function (data) {
+                        const graphicsLayer = new GraphicsLayer({
+                            id: config.datasetsConfig[i].id,
+                            title: config.datasetsConfig[i].name,
+                            copyright:
+                                "Check copyright and permissions of this dataset at http://tlcmap.org/ghap.",
+                            popupEnabled:
+                                config.datasetsConfig[i].config.popupEnabled,
+                        });
 
-            // Set the popup template
-            const template = {
-                title: "{name}",
-                content: getInfo,
-                outFields: ["*"]
-            };
+                        const pointSymbol = {
+                            type: "simple-marker",
+                            color: color,
+                            outline: {
+                                color: "white",
+                            },
+                        };
 
-            // Create array of layer instances.
-            const layers = [];
-            if (typeof data.datasets !== undefined && Array.isArray(data.datasets)) {
-                const datasets = data.datasets;
-                for (let i = 0; i < datasets.length; i++) {
-                    const color = colorGen.generate();
-                    legend.addItem(datasets[i].name, color);
-                    const layer = new GeoJSONLayer({
-                        id: datasets[i].id,
-                        url: datasets[i].jsonURL,
-                        title: datasets[i].name,
-                        copyright: "Check copyright and permissions of this dataset at http://tlcmap.org/ghap.",
-                        popupTemplate: template,
-                        renderer: {
-                            type: "simple",
-                            field: "mag",
-                            symbol: {
-                                type: "simple-marker",
-                                color: color,
-                                outline: {
-                                    color: "white"
-                                }
-                            }
-                        }
-                    });
-                    layers.push(layer);
-                    layerDataMap[datasets[i].id] = {
-                        ...datasets[i],
-                        color: color
-                    };
-                    if (lineoption) {
-                        const lineLayer = new GeoJSONLayer({
-                            url: datasets[i].jsonURL + lineQueryString,
-                            copyright: "Check copyright and permissions of this dataset at http://tlcmap.org/ghap.",
-                            popupTemplate: template,
-                            listMode: 'hide',
-                            renderer: {
-                                type: "simple",
-                                symbol: {
-                                    type: "simple-line",
-                                    color: "white",
-                                    width: '2'
-                                }
+                        const data = config.datasetsConfig[i].config.data;
+
+                        data.features.forEach((feature) => {
+                            if (feature.geometry.type === "Point") {
+                                const point = new Graphic({
+                                    geometry: {
+                                        type: "point",
+                                        longitude:
+                                            feature.geometry.coordinates[0],
+                                        latitude:
+                                            feature.geometry.coordinates[1],
+                                    },
+                                    symbol: pointSymbol,
+                                    attributes: feature.properties,
+                                    popupTemplate: template,
+                                });
+                                graphicsLayer.add(point);
+                            } else if (feature.geometry.type === "LineString") {
+                                const line = new Graphic({
+                                    geometry: {
+                                        type: "polyline",
+                                        paths: feature.geometry.coordinates.map(
+                                            (coord) => [parseFloat(coord[0]), parseFloat(coord[1])]
+                                        ),
+                                    },
+                                    symbol: {
+                                        type: "simple-line",
+                                        color: feature.display &&
+                                        feature.display.color
+                                            ? feature.display.color
+                                            : color,
+                                        width:
+                                            feature.display &&
+                                            feature.display.lineWidth
+                                                ? feature.display.lineWidth.toString()
+                                                : "2",
+                                    },
+                                    attributes: feature.properties,
+                                    popupTemplate: template,
+                                });
+                                graphicsLayer.add(line);
                             }
                         });
-                        layers.push(lineLayer);
+
+                        layers.push(graphicsLayer);
+                        layerDataMap[config.datasetsConfig[i].id] =
+                            config.datasetsConfig[i].layerContent;
                     }
                 }
-            }
 
-            // Create the map instance.
-            const map = new Map({
-                basemap: baselayer,
-                ground: "world-elevation",
-                layers: layers
-            });
+                // Create the map instance.
+                const map = new Map({
+                    basemap: config.basemap,
+                    ground: "world-elevation",
+                    layers: layers,
+                });
 
-            // Create the map view instance.
-            const view = new MapView({
-                container: "viewDiv",
-                center: [131.034742, -25.345113],
-                zoom: 3,
-                map: map
-            });
+                // Create the map view instance.
+                const view = new SceneView({
+                    container: "viewDiv",
+                    center: [131.034742, -25.345113],
+                    zoom: 3,
+                    map: map,
+                });
 
-            // Merge all extents of layers and go to the merged extent.
-            const layerQueryPromises = [];
-            for (let i = 0; i < layers.length; i++) {
-                layerQueryPromises.push(layers[i].queryExtent());
-            }
-            promiseUtils.eachAlways(layerQueryPromises).then(function (results) {
-                let extent = null;
-                for (let i = 0; i < results.length; i++) {
-                    if (typeof results[i].value !== 'undefined') {
-                        if (extent === null) {
-                            extent = results[i].value.extent;
-                        } else {
-                            extent.union(results[i].value.extent);
-                        }
-                    }
+                //Merge all extents of layers and go to the merged extent.
+                let allGraphics = [];
+                for (let i = 0; i < layers.length; i++) {
+                    allGraphics = allGraphics.concat(layers[i].graphics.items);
                 }
-                view.goTo(extent);
-            });
 
-            // Create the layer list widget.
-            let layerList = new LayerList({
-                view: view,
-                listItemCreatedFunction: function (event) {
+                let xmin = Infinity;
+                let ymin = Infinity;
+                let xmax = -Infinity;
+                let ymax = -Infinity;
 
-                    // The event object contains properties of the
-                    // layer in the LayerList widget.
-                    const item = event.item;
-                    const layerID = item.layer.id;
-                    const layerData = layerDataMap[layerID];
-
-                    // Create the information panel.
-                    if (layerData) {
-                        item.panel = {
-                            className: 'esri-icon-notice-round',
-                            title: 'View layer properties',
-                            content: CollectionUtility.createLayerInfoPanelElement(layerData)
-                        };
+                allGraphics.forEach((graphic) => {
+                    let gExtent = graphic.geometry.extent;
+                    if (gExtent) {
+                        xmin = Math.min(xmin, gExtent.xmin);
+                        ymin = Math.min(ymin, gExtent.ymin);
+                        xmax = Math.max(xmax, gExtent.xmax);
+                        ymax = Math.max(ymax, gExtent.ymax);
+                    } else if (graphic.geometry.type === "point") {
+                        // For point type geometry, use the point's coordinates
+                        xmin = Math.min(xmin, graphic.geometry.x);
+                        ymin = Math.min(ymin, graphic.geometry.y);
+                        xmax = Math.max(xmax, graphic.geometry.x);
+                        ymax = Math.max(ymax, graphic.geometry.y);
                     }
+                });
 
-                    // Add actions.
-                    item.actionsSections = [[{
-                        title: "Go to full extent",
-                        className: "esri-icon-zoom-out-fixed",
-                        id: "full-extent"
-                    }]];
-                }
-            });
+                const allExtent = new Extent({
+                    xmin: xmin,
+                    ymin: ymin,
+                    xmax: xmax,
+                    ymax: ymax,
+                    spatialReference: view.spatialReference,
+                });
 
-            // Action handler of going to full extent.
-            layerList.on("trigger-action", function (event) {
-                if (event.action.id === 'full-extent') {
-                    event.item.layer.queryExtent().then(function (result) {
-                        view.goTo(result.extent);
+                setTimeout(function () {
+                    view.goTo(allExtent);
+                }, 800);
+
+                //List Pane
+                if (config.listPane != "disabled") {
+                    // Create the layer list widget.
+                    let layerList = new LayerList({
+                        view: view,
+                        listItemCreatedFunction: function (event) {
+                            // The event object contains properties of the
+                            // layer in the LayerList widget.
+
+                            const item = event.item;
+
+                            const layerID = item.layer.id;
+                            const layerData = layerDataMap[layerID].content;
+
+                            // Create the information panel.
+                            if (layerData) {
+                                item.panel = {
+                                    className: "esri-icon-notice-round",
+                                    title: "View layer properties",
+                                    content: layerData,
+                                };
+                            }
+
+                            // Add actions.
+                            item.actionsSections = [
+                                [
+                                    {
+                                        title: "Go to full extent",
+                                        className: "esri-icon-zoom-out-fixed",
+                                        id: "full-extent",
+                                    },
+                                ],
+                            ];
+                        },
                     });
+
+                    // Action handler of going to full extent.
+                    layerList.on("trigger-action", function (event) {
+                        if (event.action.id === "full-extent") {
+                            event.item.layer
+                                .queryExtent()
+                                .then(function (result) {
+                                    view.goTo(result.extent);
+                                });
+                        }
+                    });
+
+                    const layerListExpand = new Expand();
+                    loadListPane(config, layerListExpand, view, layerList);
                 }
-            });
 
-            // Create the expand widget to contain the layer list widget.
-            const layerListExpand = new Expand({
-                collapsedIconClass: "esri-icon-collapse",
-                expandIconClass: "esri-icon-expand",
-                expandTooltip: "Show",
-                view: view,
-                content: layerList,
-                expanded: true
-            });
-            view.ui.add(layerListExpand, {
-                position: "top-left",
-                index: 0
-            });
+                //Info block
+                if (config.infoDisplay != "disabled") {
+                    const infoDivExpand = new Expand();
+                    loadInfoBlock(config, infoDivExpand, view);
 
-            // Create the expand widget to contain the metadata block.
-            const infoDiv = document.getElementById("infoDiv");
-            const infoDivExpand = new Expand({
-                collapsedIconClass: "esri-icon-collapse",
-                expandIconClass: "esri-icon-expand",
-                expandTooltip: "Show",
-                view: view,
-                content: infoDiv,
-                expanded: true
-            });
-            view.ui.add(infoDivExpand, "top-right");
+                    //Legend display
+                    if (config.legend !== false) {
+                        $(infoDiv).append(
+                            '<div class="legend-container"></div>'
+                        );
+                        legend.render($(infoDiv).find(".legend-container"));
+                    }
+                }
 
-            // Display collection metadata.
-            CollectionUtility.createCollectionMetadataDisplay($(infoDiv), data);
-            legend.render($(infoDiv).find('.legend-container'));
-
-            // Create the basemap gallery widget with expand.
-            const basemapGallery = new BasemapGallery({
-                view: view,
-                container: document.createElement("div")
-            });
-            const bgExpand = new Expand({
-                view: view,
-                content: basemapGallery.container,
-                expandIconClass: "esri-icon-basemap"
-            });
-            // Add the expand instance to the ui
-            view.ui.add(bgExpand, "top-right");
-
-        }).fail(function () {
-            console.log('Failed to load the collection data');
-        });
+                //Basemap gallery block
+                if (config.basemapGallery) {
+                    var basemapGallery = new BasemapGallery();
+                    var bgExpand = new Expand();
+                    loadBaseMapGallery(basemapGallery, bgExpand, view);
+                }
+            })
+            .catch((err) => console.error(err));
     });
 })();
