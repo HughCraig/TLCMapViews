@@ -57,7 +57,7 @@
                             },
                             symbol: {
                                 type: "text",
-                                color: "#004a5d",
+                                color: config.clusterFontColor,
                                 font: {
                                     weight: "bold",
                                     family: "Noto Sans",

@@ -26,6 +26,7 @@ function loadConfig(urltoload) {
         basemap: "hybrid",
         color: "orange", //Default color orange
         clusterColor: null,
+        clusterFontColor:'#004a5d', //Default color dark blue
         popupEnabled: true, //Enable pop up by default
         popupTitle: null,
         popupContent: null,
@@ -127,6 +128,11 @@ function loadConfig(urltoload) {
                     //Cluster color
                     if (display.hasOwnProperty("clusterColor")) {
                         config["clusterColor"] = display.clusterColor;
+                    }
+
+                    //Cluster font color
+                    if (display.hasOwnProperty("clusterFontColor")) {
+                        config["clusterFontColor"] = display.clusterFontColor;
                     }
 
                     // Popup template
