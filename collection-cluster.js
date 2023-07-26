@@ -105,6 +105,9 @@
                         );
                         const newurl = URL.createObjectURL(blob);
 
+                        //Load cluster font color of this dataset
+                        clusterConfig.labelingInfo[0].symbol.color = config.datasetsConfig[i].config.clusterFontColor;
+
                         const layer = new GeoJSONLayer({
                             id: config.datasetsConfig[i].id,
                             url: newurl,
