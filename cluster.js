@@ -1,14 +1,24 @@
-(function () {
-    window.addEventListener(
-        "message",
-        function (event) {
-            const geojson = event.data;
-            if (geojson && geojson.type === "FeatureCollection") {
-                loadGeoJson(geojson);
-            }
-        },
-        false
-    );
+(async function () {
+    
+    var urlParams = new URLSearchParams(window.location.search);
+    var urltoload = urlParams.get("load");
+
+    if (urltoload !== null && urltoload !== '') {
+        const geojsonData = await loadFromUrl(urltoload);
+        loadGeoJson(geojsonData);
+    } else {
+        initializeMap("MapView");
+        window.addEventListener(
+            "message",
+            function (event) {
+                const geojson = event.data;
+                if (geojson && geojson.type === "FeatureCollection") {
+                    loadGeoJson(geojson);
+                }
+            },
+            false
+        );
+    }
 
     function loadGeoJson(geojsonData) {
         require([
@@ -17,13 +27,7 @@
             "esri/views/MapView",
             "esri/widgets/Expand",
             "esri/widgets/BasemapGallery",
-        ], function (
-            Map,
-            GeoJSONLayer,
-            MapView,
-            Expand,
-            BasemapGallery
-        ) {
+        ], function (Map, GeoJSONLayer, MapView, Expand, BasemapGallery) {
             const config = loadConfig(geojsonData);
 
             const clusterConfig = {

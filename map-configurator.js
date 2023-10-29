@@ -24,7 +24,6 @@ function loadInfoBlock(config, infoDivExpand, view) {
         if (config.logoLink != null) {
             let linkElement = document.createElement("a");
             linkElement.href = config.logoLink;
-            
             iconElement.parentNode.replaceChild(linkElement, iconElement);
             linkElement.appendChild(iconElement);
         }
@@ -169,4 +168,58 @@ function loadListPane(config, layerListExpand, view, layerList) {
             position: "top-left",
             index: 0,
         });
+}
+
+/**
+ * Initialize and render the map when no url is given an no data
+ * is sent.
+ */
+function initializeMap(mapType = "MapView") {
+    require([
+        "esri/Map",
+        "esri/views/MapView",
+        "esri/widgets/Expand",
+        "esri/views/SceneView",
+    ], function (Map, MapView, Expand, SceneView) {
+        var map = new Map({
+            basemap: "hybrid",
+            ground: "world-elevation",
+        });
+
+        if(mapType === "SceneView") {
+            var view = new SceneView({
+                container: "viewDiv",
+                center: [131.034742, -25.345113],
+                zoom: 3,
+                map: map,
+            });
+        }else{
+            var view = new MapView({
+                container: "viewDiv",
+                center: [131.034742, -25.345113],
+                zoom: 3,
+                map: map,
+            });
+        }
+
+        // const infoDiv = document.getElementById("infoDiv");
+        // const infoDivExpand = new Expand({
+        //     collapsedIconClass: "esri-icon-collapse",
+        //     expandIconClass: "esri-icon-expand",
+        //     expandTooltip: "Show",
+        //     view: view,
+        //     content: infoDiv,
+        //     expanded: true,
+        // });
+
+        // //Info div logo
+        // let iconElement = document.querySelector(".mdicon");
+        // iconElement.src = "./img/tlcmaplogofull_sm50.png";
+        // let linkElement = document.createElement("a");
+        // linkElement.href = "https://www.tlcmap.org";
+        // iconElement.parentNode.replaceChild(linkElement, iconElement);
+        // linkElement.appendChild(iconElement);
+
+        // view.ui.add(infoDivExpand, "top-right");
+    });
 }

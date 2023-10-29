@@ -603,3 +603,16 @@ function getMapStyle(mapStyle) {
 
     return validMapStyles.has(mapStyle) ? mapStyle : "hybrid";
 }
+
+async function loadFromUrl(urlToLoad) {
+    try {
+        const response = await fetch(urlToLoad);
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        console.error("Failed to load Geo JSON:", error);
+    }
+}

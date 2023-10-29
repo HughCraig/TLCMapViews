@@ -1,4 +1,4 @@
-(function () {
+(async function () {
     var flyfeatures; // once the view is loaded the array of coords is stored here, so flyto can go through it.
     var leg = 0; // just to keep track fo where we are in the journey
     var flyview;
@@ -6,94 +6,109 @@
     var urlParams = new URLSearchParams(window.location.search);
     var urltoload = urlParams.get("load");
 
-    require([
-        "esri/Map",
-        "esri/layers/GeoJSONLayer",
-        "esri/views/SceneView",
-        "esri/geometry/Extent",
-        "esri/widgets/Expand",
-        "esri/widgets/BasemapGallery",
-    ], function (Map, GeoJSONLayer, MapView, Extent, Expand, BasemapGallery) {
-        loadConfig(urltoload)
-            .then((config) => {
-                // Paste the url into a browser's address bar to download and view the attributes
-                // in the GeoJSON file. These attributes include:
-                // * mag - magnitude
-                // * type - earthquake or other event such as nuclear test
-                // * place - location of the event
-                // * time - the time of the event
-                // Use the Arcade Date() function to format time field into a human-readable format
-
-
-                // Pass the updated data with id for each feature to layer
-                const blob = new Blob([JSON.stringify(config.data)], {
-                    type: "application/json",
-                });
-                const newurl = URL.createObjectURL(blob);
-
-                var geojsonLayer = new GeoJSONLayer({
-                    url: newurl,
-                    copyright:
-                        "Check copyright and permissions of this dataset at http://tlcmap.org/ghap.",
-                    popupTemplate: loadPopUpTemplate(config),
-                    renderer: loadRenderer(config),
-                    popupEnabled: config.popupEnabled,
-                });
-
-                var map = new Map({
-                    basemap: config.basemap,
-                    ground: "world-elevation",
-                    layers: [geojsonLayer],
-                });
-
-                var view = new MapView({
-                    container: "viewDiv",
-                    center: [131.034742, -25.345113],
-                    zoom: 4,
-                    map: map,
-                });
-
-                geojsonLayer.queryExtent().then(function (results) {
-                    // go to the extent of the results, id the midpoint of the whole map to start.
-                    // and then go to the first one.
-
-                    // ultimately the effect we have is:
-                    // we load the map, and go quickly to a broad view of the whole dataset.
-                    // then we zoom slowly to the start point and go through the journey.
-                    // if it fails we laoded the map centred on Uluru, so at least we see Aus.
-
-                    setTimeout(function () {
-                        view.goTo(results.extent).then(function (results) {
-                            let query = geojsonLayer.createQuery();
-
-                            geojsonLayer
-                                .queryFeatures(query)
-                                .then(function (results) {
-                                    flyview = view;
-                                    flyfeatures = results.features;
-                                    const fragment =
-                                        document.createDocumentFragment();
-                                    fly();
-                                });
-                        });
-                    }, 800);
-                });
-
-                //Info block
-                if (config.infoDisplay != "disabled") {
-                    const infoDivExpand = new Expand();
-                    loadInfoBlock(config, infoDivExpand, view);
+    if (urltoload !== null && urltoload !== "") {
+        const geojsonData = await loadFromUrl(urltoload);
+        loadGeoJson(geojsonData);
+    } else {
+        initializeMap("SceneView");
+        window.addEventListener(
+            "message",
+            function (event) {
+                const geojson = event.data;
+                if (geojson && geojson.type === "FeatureCollection") {
+                    loadGeoJson(geojson);
                 }
+            },
+            false
+        );
+    }
 
-                //Basemap gallery block
-                if (config.basemapGallery) {
-                    var basemapGallery = new BasemapGallery();
-                    var bgExpand = new Expand();
-                    loadBaseMapGallery(basemapGallery, bgExpand, view);
-                }
-            })
-            .catch((err) => console.error(err));
-    });
+    function loadGeoJson(geojsonData) {
+        require([
+            "esri/Map",
+            "esri/layers/GeoJSONLayer",
+            "esri/views/SceneView",
+            "esri/widgets/Expand",
+            "esri/widgets/BasemapGallery",
+        ], function (Map, GeoJSONLayer, MapView, Expand, BasemapGallery) {
+            const config = loadConfig(geojsonData);
+
+            // Paste the url into a browser's address bar to download and view the attributes
+            // in the GeoJSON file. These attributes include:
+            // * mag - magnitude
+            // * type - earthquake or other event such as nuclear test
+            // * place - location of the event
+            // * time - the time of the event
+            // Use the Arcade Date() function to format time field into a human-readable format
+
+            // Pass the updated data with id for each feature to layer
+            const blob = new Blob([JSON.stringify(config.data)], {
+                type: "application/json",
+            });
+            const newurl = URL.createObjectURL(blob);
+
+            var geojsonLayer = new GeoJSONLayer({
+                url: newurl,
+                copyright:
+                    "Check copyright and permissions of this dataset at http://tlcmap.org/ghap.",
+                popupTemplate: loadPopUpTemplate(config),
+                renderer: loadRenderer(config),
+                popupEnabled: config.popupEnabled,
+            });
+
+            var map = new Map({
+                basemap: config.basemap,
+                ground: "world-elevation",
+                layers: [geojsonLayer],
+            });
+
+            var view = new MapView({
+                container: "viewDiv",
+                center: [131.034742, -25.345113],
+                zoom: 4,
+                map: map,
+            });
+
+            geojsonLayer.queryExtent().then(function (results) {
+                // go to the extent of the results, id the midpoint of the whole map to start.
+                // and then go to the first one.
+
+                // ultimately the effect we have is:
+                // we load the map, and go quickly to a broad view of the whole dataset.
+                // then we zoom slowly to the start point and go through the journey.
+                // if it fails we laoded the map centred on Uluru, so at least we see Aus.
+
+                setTimeout(function () {
+                    view.goTo(results.extent).then(function (results) {
+                        let query = geojsonLayer.createQuery();
+
+                        geojsonLayer
+                            .queryFeatures(query)
+                            .then(function (results) {
+                                flyview = view;
+                                flyfeatures = results.features;
+                                const fragment =
+                                    document.createDocumentFragment();
+                                fly();
+                            });
+                    });
+                }, 800);
+            });
+
+            //Info block
+            if (config.infoDisplay != "disabled") {
+                const infoDivExpand = new Expand();
+                loadInfoBlock(config, infoDivExpand, view);
+            }
+
+            //Basemap gallery block
+            if (config.basemapGallery) {
+                var basemapGallery = new BasemapGallery();
+                var bgExpand = new Expand();
+                loadBaseMapGallery(basemapGallery, bgExpand, view);
+            }
+        });
+    }
 
     function fly() {
         // don't keep flying if you're at the end... or maybe make it loop.. or go back
