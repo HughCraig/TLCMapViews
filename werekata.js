@@ -54,6 +54,7 @@
                 popupTemplate: loadPopUpTemplate(config),
                 renderer: loadRenderer(config),
                 popupEnabled: config.popupEnabled,
+                outFields: ["*"],
             });
 
             var map = new Map({

@@ -53,6 +53,7 @@
                 },
                 renderer: loadRenderer(config),
                 popupTemplate: loadPopUpTemplate(config),
+                outFields: ["*"],
             });
 
             const map = new Map({

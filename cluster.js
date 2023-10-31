@@ -1,9 +1,8 @@
 (async function () {
-    
     var urlParams = new URLSearchParams(window.location.search);
     var urltoload = urlParams.get("load");
 
-    if (urltoload !== null && urltoload !== '') {
+    if (urltoload !== null && urltoload !== "") {
         const geojsonData = await loadFromUrl(urltoload);
         loadGeoJson(geojsonData);
     } else {
@@ -96,6 +95,7 @@
                 popupTemplate: loadPopUpTemplate(config),
                 renderer: loadRenderer(config),
                 popupEnabled: config.popupEnabled,
+                outFields: ["*"],
             });
 
             var map = new Map({
@@ -109,6 +109,23 @@
                 center: [131.034742, -25.345113],
                 zoom: 3,
                 map: map,
+            });
+
+            // Function to handle click events on the map
+            view.on("click", function (event) {
+                // Perform a hitTest on the view
+                view.hitTest(event).then(function (response) {
+                    if (
+                        response.results.length > 0 &&
+                        response.results[0].graphic
+                    ) {
+                        var attributes = response.results[0].graphic.attributes;
+                        window.parent.postMessage({
+                            event: 'popupClicked',
+                            details: attributes
+                        }, '*');                      
+                    }
+                });
             });
 
             geojsonLayer.queryExtent().then(function (results) {

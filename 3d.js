@@ -48,6 +48,7 @@
                 popupTemplate: loadPopUpTemplate(config),
                 renderer: loadRenderer(config), //optional
                 popupEnabled: config.popupEnabled,
+                outFields: ["*"],
             });
 
             var map = new Map({

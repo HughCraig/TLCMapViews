@@ -73,6 +73,7 @@
                 popupTemplate: template,
                 renderer: loadRenderer(config),
                 popupEnabled: config.popupEnabled,
+                outFields: ["*"],
             });
             map.layers.add(geojsonPointLayer);
 
@@ -108,6 +109,7 @@
                             })
                         ),
                     },
+                    outFields: ["*"],
                 });
                 map.layers.add(geojsonLineLayer);
             }
