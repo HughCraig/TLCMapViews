@@ -21,6 +21,7 @@ function loadConfig(data) {
         popupBlockedFields: defaultBlockedFields,
         popupFieldLabels: null,
         popupLinks: null,
+        postBack : false,
     };
 
     //global configurations
@@ -160,6 +161,11 @@ function loadConfig(data) {
             if (display.popup.links && Array.isArray(display.popup.links)) {
                 config["popupLinks"] = display.popup.links;
             }
+        }
+
+        //Post back using tlcmap-api
+        if (display.hasOwnProperty("postBack")) {
+            config["postBack"] = display.postBack;
         }
     }
 

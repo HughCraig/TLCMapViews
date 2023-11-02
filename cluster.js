@@ -1,4 +1,5 @@
 (async function () {
+    initializeMap("MapView");
     var urlParams = new URLSearchParams(window.location.search);
     var urltoload = urlParams.get("load");
 
@@ -6,7 +7,6 @@
         const geojsonData = await loadFromUrl(urltoload);
         loadGeoJson(geojsonData);
     } else {
-        initializeMap("MapView");
         window.addEventListener(
             "message",
             function (event) {
@@ -18,6 +18,8 @@
             false
         );
     }
+
+    var map , view , infoDivExpand , bgExpand;
 
     function loadGeoJson(geojsonData) {
         require([
@@ -81,6 +83,22 @@
                 };
             }
 
+            if (!map || map.basemap != config.basemap) {
+                map = new Map({
+                    basemap: config.basemap,
+                    ground: "world-elevation",
+                });
+            }
+            
+            if(!view){
+                view = new MapView({
+                    container: "viewDiv",
+                    center: [131.034742, -25.345113],
+                    zoom: 3,
+                    map: map,
+                });
+            }
+
             // Pass the updated data with id for each feature to layer
             const blob = new Blob([JSON.stringify(config.data)], {
                 type: "application/json",
@@ -97,36 +115,29 @@
                 popupEnabled: config.popupEnabled,
                 outFields: ["*"],
             });
-
-            var map = new Map({
-                basemap: config.basemap,
-                ground: "world-elevation",
-                layers: [geojsonLayer],
-            });
-
-            var view = new MapView({
-                container: "viewDiv",
-                center: [131.034742, -25.345113],
-                zoom: 3,
-                map: map,
-            });
-
-            // Function to handle click events on the map
-            view.on("click", function (event) {
-                // Perform a hitTest on the view
-                view.hitTest(event).then(function (response) {
-                    if (
-                        response.results.length > 0 &&
-                        response.results[0].graphic
-                    ) {
-                        var attributes = response.results[0].graphic.attributes;
-                        window.parent.postMessage({
-                            event: 'popupClicked',
-                            details: attributes
-                        }, '*');                      
-                    }
+            view.map.layers.removeAll();
+            view.map.layers.add(geojsonLayer);
+           
+            // Click point to post back 
+            if(config.postBack){
+                view.on("click", function (event) {
+                    view.hitTest(event).then(function (response) {
+                        if (
+                            response.results.length > 0 &&
+                            response.results[0].graphic
+                        ) {
+                            var attributes = response.results[0].graphic.attributes;
+                            window.parent.postMessage(
+                                {
+                                    event: "popupClicked",
+                                    details: attributes,
+                                },
+                                "*"
+                            );
+                        }
+                    });
                 });
-            });
+            }
 
             geojsonLayer.queryExtent().then(function (results) {
                 // go to the extent of the results satisfying the query
@@ -134,15 +145,17 @@
             });
 
             //Info block
+            view.ui.remove(infoDivExpand);
             if (config.infoDisplay != "disabled") {
-                const infoDivExpand = new Expand();
+                infoDivExpand = new Expand();
                 loadInfoBlock(config, infoDivExpand, view);
             }
 
             //Basemap gallery block
+            view.ui.remove(bgExpand);
             if (config.basemapGallery) {
                 var basemapGallery = new BasemapGallery();
-                var bgExpand = new Expand();
+                bgExpand = new Expand();
                 loadBaseMapGallery(basemapGallery, bgExpand, view);
             }
         });

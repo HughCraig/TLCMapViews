@@ -1,31 +1,26 @@
 /**
- * Loading and configuring the information block.
+ * Loading and re-configure the information block.
  * @param {Object} config   User Configurations from JSON url input
  * @param {Object} infoDivExpand  ArcGIS Expand widget
  * @param {Object} view ArcGIS MapView
  */
 function loadInfoBlock(config, infoDivExpand, view) {
-    const infoDiv = document.getElementById("infoDiv");
-
-    infoDivExpand.collapsedIconClass = "esri-icon-collapse";
-    infoDivExpand.expandedIconClass = "esri-icon-expand";
-    infoDivExpand.expandTooltip = "Show";
-    infoDivExpand.view = view;
-    infoDivExpand.content = infoDiv;
-    infoDivExpand.expanded = config.infoDisplay === "hidden" ? false : true;
-
-    view.ui.add(infoDivExpand, "top-right");
+    const infoDiv = document.createElement("div");
+    infoDiv.id = "infoDiv";
 
     //Info logo
     if (config.logo) {
-        let iconElement = document.querySelector(".mdicon");
+        const iconElement = document.createElement("img");
+        iconElement.className = "mdicon";
         iconElement.src = config.logo;
 
         if (config.logoLink != null) {
             let linkElement = document.createElement("a");
             linkElement.href = config.logoLink;
-            iconElement.parentNode.replaceChild(linkElement, iconElement);
             linkElement.appendChild(iconElement);
+            infoDiv.appendChild(linkElement);
+        } else {
+            infoDiv.appendChild(iconElement);
         }
     }
 
@@ -46,9 +41,18 @@ function loadInfoBlock(config, infoDivExpand, view) {
     }
 
     //Info content
-    if (config.content != null && config.content != "") {
-        document.querySelector("#infoDiv").innerHTML += config.content;
+    if (config.content != null && config.content !== "") {
+        infoDiv.innerHTML += config.content;
     }
+
+    infoDivExpand.collapsedIconClass = "esri-icon-collapse";
+    infoDivExpand.expandedIconClass = "esri-icon-expand";
+    infoDivExpand.expandTooltip = "Show";
+    infoDivExpand.view = view;
+    infoDivExpand.content = infoDiv;
+    infoDivExpand.expanded = config.infoDisplay === "hidden" ? false : true;
+
+    view.ui.add(infoDivExpand, "top-right");
 }
 
 /**
@@ -186,15 +190,16 @@ function initializeMap(mapType = "MapView") {
             ground: "world-elevation",
         });
 
-        if(mapType === "SceneView") {
-            var view = new SceneView({
+        var view;
+        if (mapType === "SceneView") {
+            view = new SceneView({
                 container: "viewDiv",
                 center: [131.034742, -25.345113],
                 zoom: 3,
                 map: map,
             });
-        }else{
-            var view = new MapView({
+        } else {
+            view = new MapView({
                 container: "viewDiv",
                 center: [131.034742, -25.345113],
                 zoom: 3,
@@ -202,24 +207,28 @@ function initializeMap(mapType = "MapView") {
             });
         }
 
-        // const infoDiv = document.getElementById("infoDiv");
-        // const infoDivExpand = new Expand({
-        //     collapsedIconClass: "esri-icon-collapse",
-        //     expandIconClass: "esri-icon-expand",
-        //     expandTooltip: "Show",
-        //     view: view,
-        //     content: infoDiv,
-        //     expanded: true,
-        // });
+        const infoDiv = document.createElement("div");
+        infoDiv.id = "infoDiv";
+        var infoDivExpand = new Expand({
+            collapsedIconClass: "esri-icon-collapse",
+            expandIconClass: "esri-icon-expand",
+            expandTooltip: "Show",
+            view: view,
+            content: infoDiv,
+            expanded: true,
+        });
 
-        // //Info div logo
-        // let iconElement = document.querySelector(".mdicon");
-        // iconElement.src = "./img/tlcmaplogofull_sm50.png";
-        // let linkElement = document.createElement("a");
-        // linkElement.href = "https://www.tlcmap.org";
-        // iconElement.parentNode.replaceChild(linkElement, iconElement);
-        // linkElement.appendChild(iconElement);
+        //Info div logo
+        const iconElement = document.createElement("img");
+        iconElement.className = "mdicon";
+        iconElement.src = "./img/tlcmaplogofull_sm50.png";
+        let linkElement = document.createElement("a");
+        linkElement.href = "https://www.tlcmap.org";
+        linkElement.appendChild(iconElement);
+        infoDiv.appendChild(linkElement);
 
-        // view.ui.add(infoDivExpand, "top-right");
+        view.ui.add(infoDivExpand, "top-right");
+
+        return { map: map, view: view };
     });
 }
