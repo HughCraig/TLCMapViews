@@ -358,7 +358,13 @@ function loadConfig(urltoload) {
 
                 resolve(config);
             })
-            .catch((err) => console.error(err));
+            .catch((err) => {
+                console.error(err); 
+                config.titleText = "Error: Unable to load GeoJSON data from the specified URL";
+
+                config["data"] = { features: [] };
+                resolve(config); 
+            });
     });
 }
 
