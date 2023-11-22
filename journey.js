@@ -159,20 +159,12 @@
 
                 //Not sure why but timeout is needed to avoid the 'AbortError' Promise error.
                 //This problem could happens on the original code as well(30% change) which prevent the initial zoom/center setting
-                if(geojsonLineLayer != null){
-                    geojsonLineLayer.queryExtent().then(function (results) {
-                        setTimeout(function () {
-                            view.goTo(results.extent);
-                        }, 800);
-                    });
-                }else{
-                    geojsonPointLayer.queryExtent().then(function (results) {
-                        setTimeout(function () {
-                            view.goTo(results.extent);
-                        }, 800);
-                    });
-                }
-
+                geojsonPointLayer.queryExtent().then(function (results) {
+                    setTimeout(function () {
+                        view.goTo(results.extent);
+                    }, 800);
+                });
+                
                 //Info block
                 if (config.infoDisplay != "disabled") {
                     const infoDivExpand = new Expand();
