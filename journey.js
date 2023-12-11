@@ -30,7 +30,20 @@
         "esri/geometry/Extent",
         "esri/widgets/Expand",
         "esri/widgets/BasemapGallery",
-    ], function (Map, GeoJSONLayer, SceneView, Extent, Expand, BasemapGallery) {
+        "esri/geometry/Polyline",
+        "esri/geometry/support/geodesicUtils",
+        "esri/geometry/support/normalizeUtils",
+    ], function (
+        Map,
+        GeoJSONLayer,
+        SceneView,
+        Extent,
+        Expand,
+        BasemapGallery,
+        Polyline,
+        geodesicUtils,
+        normalizeUtils
+    ) {
         loadConfig(urltoload)
             .then((config) => {
                 var map = new Map({
@@ -63,41 +76,78 @@
                 });
                 map.layers.add(geojsonPointLayer);
 
+                var geojsonLineLayer = null;
+                var lineGeoJson = {
+                    type: "FeatureCollection",
+                    features: [],
+                };
                 if (lineData.features.length > 0) {
-                    const blob = new Blob([JSON.stringify(lineData)], {
-                        type: "application/json",
-                    });
-                    const lineDataUrl = URL.createObjectURL(blob);
+                    let promises = lineData.features.map((feature) => {
+                        var polyline = new Polyline({
+                            paths: feature.geometry.coordinates,
+                        });
 
-                    var geojsonLineLayer = new GeoJSONLayer({
-                        url: lineDataUrl,
-                        copyright:
-                            "Check copyright and permissions of this dataset at http://tlcmap.org/ghap.",
-                        popupTemplate: template,
-                        renderer: {
-                            type: "unique-value",
-                            field: "tlcMapUniqueId", // The name of the attribute field containing types or categorical values referenced in uniqueValueInfos or uniqueValueGroups
-                            uniqueValueInfos: config.data.features.map(
-                                (feature) => ({
-                                    value: feature.properties.tlcMapUniqueId,
-                                    symbol: {
-                                        type: "simple-line",
-                                        color:
-                                            feature.display &&
-                                            feature.display.color
-                                                ? feature.display.color
-                                                : "white",
-                                        width:
-                                            feature.display &&
-                                            feature.display.lineWidth
-                                                ? feature.display.lineWidth.toString()
-                                                : "2",
-                                    },
-                                })
-                            ),
-                        },
+                        let densifiedPolyline = geodesicUtils.geodesicDensify(
+                            polyline,
+                            1000000
+                        );
+                        return normalizeUtils
+                            .normalizeCentralMeridian(densifiedPolyline)
+                            .then(([normalizedGeometry]) => {
+                                normalizedGeometry.paths.forEach(
+                                    (coordinates) => {
+                                        let lineFeature = {
+                                            type: "Feature",
+                                            geometry: {
+                                                type: "LineString",
+                                                coordinates: coordinates,
+                                            },
+                                            display: feature.display,
+                                            properties: feature.properties,
+                                        };
+                                        lineGeoJson.features.push(lineFeature);
+                                    }
+                                );
+                            });
                     });
-                    map.layers.add(geojsonLineLayer);
+
+                    Promise.all(promises).then(() => {
+                        const blob = new Blob([JSON.stringify(lineGeoJson)], {
+                            type: "application/json",
+                        });
+                        const lineDataUrl = URL.createObjectURL(blob);
+
+                        geojsonLineLayer = new GeoJSONLayer({
+                            url: lineDataUrl,
+                            copyright:
+                                "Check copyright and permissions of this dataset at http://tlcmap.org/ghap.",
+                            popupTemplate: template,
+                            renderer: {
+                                type: "unique-value",
+                                field: "tlcMapUniqueId", // The name of the attribute field containing types or categorical values referenced in uniqueValueInfos or uniqueValueGroups
+                                uniqueValueInfos: config.data.features.map(
+                                    (feature) => ({
+                                        value: feature.properties
+                                            .tlcMapUniqueId,
+                                        symbol: {
+                                            type: "simple-line",
+                                            color:
+                                                feature.display &&
+                                                feature.display.color
+                                                    ? feature.display.color
+                                                    : "white",
+                                            width:
+                                                feature.display &&
+                                                feature.display.lineWidth
+                                                    ? feature.display.lineWidth.toString()
+                                                    : "2",
+                                        },
+                                    })
+                                ),
+                            },
+                        });
+                        map.layers.add(geojsonLineLayer);
+                    });
                 }
 
                 var view = new SceneView({
@@ -114,7 +164,7 @@
                         view.goTo(results.extent);
                     }, 800);
                 });
-
+                
                 //Info block
                 if (config.infoDisplay != "disabled") {
                     const infoDivExpand = new Expand();

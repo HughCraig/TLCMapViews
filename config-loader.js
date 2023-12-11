@@ -358,7 +358,13 @@ function loadConfig(urltoload) {
 
                 resolve(config);
             })
-            .catch((err) => console.error(err));
+            .catch((err) => {
+                console.error(err); 
+                config.titleText = "Error: Unable to load GeoJSON data from the specified URL";
+
+                config["data"] = { features: [] };
+                resolve(config); 
+            });
     });
 }
 
@@ -379,8 +385,8 @@ function loadConfig(urltoload) {
 function purifyContent(content) {
     // Use DOMPurify to purify the tags first.
     content = DOMPurify.sanitize(content, {
-        ALLOWED_TAGS: ["p", "a", "strong", "em", "ul", "ol", "li", "div", "br", "table", "tr", "td", "th", "tbody", "thead", "tfoot"],
-        ALLOWED_ATTR: ["href", "target", "class"],
+        ALLOWED_TAGS: ["p", "a", "strong", "em", "ul", "ol", "li", "div", "br", "table", "tr", "td", "th", "tbody", "thead", "tfoot", 'img'],
+        ALLOWED_ATTR: ["href", "target", "class", 'src', 'alt'],
     });
 
     if (content == null || content === "") {
@@ -410,6 +416,7 @@ function purifyContent(content) {
             tbody: [],
             thead: [],
             tfoot: [],
+            img: ['src', 'alt']
         };
 
         // Get the current node name
