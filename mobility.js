@@ -213,7 +213,7 @@
                           width:
                             feature.display && feature.display.lineWidth
                               ? feature.display.lineWidth.toString()
-                              : 0.8,
+                              : 2,
                           color:
                             feature.display && feature.display.color
                               ? feature.display.color
@@ -223,7 +223,7 @@
                           // arrow symbol
                           type: "CIMVectorMarker",
                           enable: true,
-                          size: 3,
+                          size: 5,
                           markerPlacement: {
                             type: "CIMMarkerPlacementAlongLineSameSize", // places same size markers along the line
                             endings: "WithMarkers",
@@ -273,9 +273,7 @@
               })),
             },
           });
-          console.log(lineData.features);
-          console.log(geojsonLineLayer);
-          console.log(template);
+
           map.layers.add(geojsonLineLayer);
         }
 

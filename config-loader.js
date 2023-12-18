@@ -443,8 +443,8 @@ function purifyContent(content) {
 /**
  * Build popup title and content from global configurations
  *
- * For point : default title name is : {name} -> {title} -> {placename} -> "Route"
- * For line: defai;t title name is: {name} -> {title} -> "Route"
+ * For point : default title name is : {name} -> {title} -> {placename} -> "Place"
+ * For line: default title name is: {name} -> {title} -> "Route"
  * Content have three parts : customContent , defaultTable , customLink
  * @param {Object} feature feature object in geojson
  * @param {Object} config config object
