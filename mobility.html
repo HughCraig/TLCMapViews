@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8"/>
+        <meta name="viewport" 
+            content="initial-scale=1,maximum-scale=1,user-scalable=no"/>
+
+        <title>TLCMap Mobility Viewer</title>
+
+        <link rel="stylesheet" href="./view.css">
+        <link rel="stylesheet" 
+            href="https://js.arcgis.com/4.28/esri/themes/light/main.css"/>
+    </head>
+
+    <body>
+
+    <div id="viewDiv"></div>
+
+    <div id="infoDiv">
+        <img class="mdicon">
+    </div>
+
+    <div id="legendDiv">
+        <span id="title">Quantity in log</span>
+        <div id="slider"></div>
+      </div>
+
+    <script
+            src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/2.3.3/purify.min.js"></script>
+        <script src="https://js.arcgis.com/4.28/"></script>
+
+    <!-- mainly just for getting the layers json metadata. -->
+    <script 
+        src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="config-loader.js"></script>
+    <script src="map-configurator.js"></script>
+    <script src="mobility.js"></script>
+    
+    </body>
+</html>

@@ -11,6 +11,13 @@ td {
     vertical-align: top;
 }
 
+#legendDiv {
+    background-color: white;
+    padding: 3px;
+    text-align: center;
+    min-width: 260px;
+  }
+
 #infoDiv {
     padding: 20px;
     z-index: 1;
