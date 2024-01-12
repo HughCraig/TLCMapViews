@@ -24,7 +24,7 @@
   }
 
   /**
-   * balabala
+   *
    *
    *
    * @param {object} layer - The ArcGIS layer object whose renderer will be updated.
@@ -32,6 +32,8 @@
    * @param {object} ColorSlider -
    * @param {} colorRendererCreator
    * @param {} histogram
+   * @param {} Color
+   * @param {} colorSchemes
    * @return {void}
    */
 
@@ -42,30 +44,45 @@
     fieldValue,
     ColorSlider,
     colorRendererCreator,
-    histogram
+    histogram,
+    Color,
+    colorSchemes
   ) {
-    const colorParams = {
+    // Ivy's note: not sure why noDataColor can't be reset in rendererResult afterward
+    let customColorScheme = colorSchemes.getSchemes({
+      geometryType: "point",
+      theme: "above-and-below",
+    });
+    const noDataColor = new Color("orange");
+    customColorScheme.primaryScheme.noDataColor = noDataColor;
+
+    let colorParams = {
       layer: layer,
       field: fieldKey,
-      normalizationType: "log", // TODO: Not sure why it doesn't work yet
       view: view,
-      theme: "above-and-below", // TODO: set the custom color ramp and default size, use ColorSchemeForPoint?
+      colorScheme: customColorScheme.primaryScheme,
       outlineOptimizationEnabled: true,
       defaultSymbolEnabled: true,
       sizeOptimizationEnabled: true,
     };
 
     let rendererResult;
-
     colorRendererCreator
       .createContinuousRenderer(colorParams)
       .then((response) => {
         // Set the renderer to the layer and add it to the map
         rendererResult = response;
-        const defaultSize = 10;
-        rendererResult.renderer.visualVariables[1].stops.forEach((stop) => {
-          stop.size = defaultSize;
+
+        // Reset the size of points
+        let defaultSize = 10;
+        rendererResult.renderer.visualVariables.forEach((vVariable) => {
+          if (vVariable.type === "size" && vVariable.stops) {
+            vVariable.stops.forEach((stop) => {
+              stop.size = defaultSize;
+            });
+          }
         });
+
         layer.renderer = rendererResult.renderer;
 
         // Generate a histogram for use in the slider. Input the layer
@@ -84,6 +101,7 @@
           rendererResult,
           histogramResult
         );
+
         // format colorSlider
         colorSlider.set({
           container: "slider",
@@ -94,22 +112,22 @@
           },
           syncedSegmentsEnabled: true,
           // Round labels to 2 decimal place
-          labelFormatFunction: (value, type) => {
+          labelFormatFunction: (value) => {
             return value.toFixed(2);
           },
         });
         colorSlider.viewModel.precision = 2;
 
-        // // hide default statistic lines from slider histogram
+        // hide default statistic lines from slider histogram
         colorSlider.histogramConfig.standardDeviation = null;
         colorSlider.histogramConfig.average = null;
 
-        // // render quartile data lines on the slider
-        // const percentages = ["25%", "50%", "75%"];
-        // colorSlider.histogramConfig.dataLines = fieldValue.map((value, i) => ({
-        //   value: value,
-        //   label: `${percentages[i]}, (${value})`,
-        // }));
+        // render quartile data lines on the slider
+        const percentages = ["25%", "50%", "75%"];
+        colorSlider.histogramConfig.dataLines = fieldValue.map((value, i) => ({
+          value: value,
+          label: `${percentages[i]}, (${value})`,
+        }));
 
         // add colorSlider into legendDiv
         view.ui.add("legendDiv", "bottom-left");
@@ -146,24 +164,30 @@
 
   require([
     "esri/Map",
+    "esri/Color",
     "esri/layers/GeoJSONLayer",
-    "esri/views/MapView",
+    "esri/views/MapView", //CIMLineSymbol is currently not work in SceneView, source: https://developers.arcgis.com/javascript/latest/sample-code/cim-line-arrows/
     "esri/widgets/Expand",
     "esri/widgets/BasemapGallery",
     "esri/widgets/smartMapping/ColorSlider",
     "esri/smartMapping/renderers/color",
     "esri/smartMapping/statistics/histogram",
     "esri/core/reactiveUtils",
+    "esri/smartMapping/symbology/color",
+    "esri/form/elements/inputs/SwitchInput",
   ], function (
     Map,
+    Color,
     GeoJSONLayer,
-    SceneView,
+    MapView,
     Expand,
     BasemapGallery,
     ColorSlider,
     colorRendererCreator,
     histogram,
-    reactiveUtils
+    reactiveUtils,
+    colorSchemes,
+    SwitchInput
   ) {
     loadConfig(urltoload)
       .then((config) => {
@@ -291,21 +315,35 @@
           popupTemplate: template,
           popupEnabled: config.popupEnabled,
           renderer: {
-            type: "unique-value",
+            type: "simple",
+            symbol: {
+              type: "simple-marker",
+              color: "orange",
+              outline: {
+                color: "white",
+              },
+            },
           },
         });
         map.layers.add(geojsonPointLayer);
 
-        var view = new SceneView({
+        var view = new MapView({
           container: "viewDiv",
           center: [131.034742, -25.345113],
           zoom: 3,
           map: map,
+          constraints: {
+            minZoom: 3, // avoid white border in extrem zooming out
+          },
         });
 
-        // Set color gradient for the quantity if quantity exists
+        // Fetch quantiles if quantity exists
         const log_quantiles = config.data.metadata.log_quantiles;
+        const quantiles = config.data.metadata.quantiles;
+        var legendDiv = document.getElementById("legendDiv");
+
         if (log_quantiles !== null && log_quantiles !== undefined) {
+          legendDiv.style.display = "block"; // Show legendDiv
           reactiveUtils
             .whenOnce(() => !view.updating)
             .then(() => {
@@ -313,10 +351,12 @@
                 geojsonPointLayer,
                 view,
                 "quantity",
-                log_quantiles,
+                quantiles,
                 ColorSlider,
                 colorRendererCreator,
-                histogram
+                histogram,
+                Color,
+                colorSchemes
               );
             });
         }
