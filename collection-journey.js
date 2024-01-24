@@ -14,6 +14,9 @@
         "esri/Graphic",
         "esri/core/promiseUtils",
         "esri/geometry/Extent",
+        "esri/geometry/Polyline",
+        "esri/geometry/support/geodesicUtils",
+        "esri/geometry/support/normalizeUtils",
     ], function (
         Map,
         SceneView,
@@ -23,7 +26,10 @@
         GraphicsLayer,
         Graphic,
         promiseUtils,
-        Extent
+        Extent,
+        Polyline,
+        geodesicUtils,
+        normalizeUtils
     ) {
         loadCollectionConfig(urltoload)
             .then((config) => {
@@ -82,29 +88,51 @@
                                 });
                                 graphicsLayer.add(point);
                             } else if (feature.geometry.type === "LineString") {
-                                const line = new Graphic({
-                                    geometry: {
-                                        type: "polyline",
-                                        paths: feature.geometry.coordinates.map(
-                                            (coord) => [parseFloat(coord[0]), parseFloat(coord[1])]
-                                        ),
-                                    },
-                                    symbol: {
-                                        type: "simple-line",
-                                        color: feature.display &&
-                                        feature.display.color
-                                            ? feature.display.color
-                                            : color,
-                                        width:
-                                            feature.display &&
-                                            feature.display.lineWidth
-                                                ? feature.display.lineWidth.toString()
-                                                : "2",
-                                    },
-                                    attributes: feature.properties,
-                                    popupTemplate: template,
+                                var lineStringPaths = [];
+
+                                let promise = (async (feature) => {
+                                    var modifiedJourneyLines =
+                                        await modifyJourneyLines(
+                                            feature.geometry.coordinates,
+                                            Polyline,
+                                            geodesicUtils,
+                                            normalizeUtils
+                                        );
+
+                                    modifiedJourneyLines.forEach(
+                                        (coordinates) => {
+                                            lineStringPaths.push(coordinates);
+                                        }
+                                    );
+                                })(feature);
+
+                                promise.then(() => {
+                                    console.log(lineStringPaths);
+
+                                    const line = new Graphic({
+                                        geometry: {
+                                            type: "polyline",
+                                            paths: lineStringPaths,
+                                        },
+                                        symbol: {
+                                            type: "simple-line",
+                                            color:
+                                                feature.display &&
+                                                feature.display.color
+                                                    ? feature.display.color
+                                                    : color,
+                                            width:
+                                                feature.display &&
+                                                feature.display.lineWidth
+                                                    ? feature.display.lineWidth.toString()
+                                                    : "2",
+                                        },
+                                        attributes: feature.properties,
+                                        popupTemplate: template,
+                                    });
+
+                                    graphicsLayer.add(line);
                                 });
-                                graphicsLayer.add(line);
                             }
                         });
 
