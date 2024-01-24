@@ -73,13 +73,13 @@ async function modifyJourneyLines(
         return [coordinates];
     }
 
-    var modifiedJourneyLines = [];
-    var currentLine = [];
+    let modifiedJourneyLines = [];
+    let currentLine = [];
 
     for (let i = 0; i < coordinates.length; i++) {
         if (i > 0 && isCrossingIDL(coordinates[i - 1][0], coordinates[i][0])) {
             //Generate coordinated of intersection at IDL using normalizeCentralMeridian function by Arcgis
-            var polyline = new Polyline({
+            let polyline = new Polyline({
                 paths: [coordinates[i - 1], coordinates[i]],
             });
 
@@ -92,12 +92,12 @@ async function modifyJourneyLines(
                     densifiedPolyline
                 );
 
-            var crossingCoordinates = findCrossingCoordinatesAtIDL(
+            let crossingCoordinates = findCrossingCoordinatesAtIDL(
                 normalizedGeometry[0].paths
             );
 
             if (crossingCoordinates != null) {
-                var otherEnd = null;
+                let otherEnd = null;
 
                 // Push intersection point at IDL. Need to be on same side of IDL
                 if (coordinates[i - 1][0] > 0) {

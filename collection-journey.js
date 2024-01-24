@@ -107,8 +107,7 @@
                                 })(feature);
 
                                 promise.then(() => {
-                                    console.log(lineStringPaths);
-
+                
                                     const line = new Graphic({
                                         geometry: {
                                             type: "polyline",
