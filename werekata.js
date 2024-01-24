@@ -1,10 +1,10 @@
 (function () {
-    var flyfeatures; // once the view is loaded the array of coords is stored here, so flyto can go through it.
-    var leg = 0; // just to keep track fo where we are in the journey
-    var flyview;
+    let flyfeatures; // once the view is loaded the array of coords is stored here, so flyto can go through it.
+    let leg = 0; // just to keep track fo where we are in the journey
+    let flyview;
 
-    var urlParams = new URLSearchParams(window.location.search);
-    var urltoload = urlParams.get("load");
+    let urlParams = new URLSearchParams(window.location.search);
+    let urltoload = urlParams.get("load");
 
     require([
         "esri/Map",
@@ -31,7 +31,7 @@
                 });
                 const newurl = URL.createObjectURL(blob);
 
-                var geojsonLayer = new GeoJSONLayer({
+                let geojsonLayer = new GeoJSONLayer({
                     url: newurl,
                     copyright:
                         "Check copyright and permissions of this dataset at http://tlcmap.org/ghap.",
@@ -40,13 +40,13 @@
                     popupEnabled: config.popupEnabled,
                 });
 
-                var map = new Map({
+                let map = new Map({
                     basemap: config.basemap,
                     ground: "world-elevation",
                     layers: [geojsonLayer],
                 });
 
-                var view = new MapView({
+                let view = new MapView({
                     container: "viewDiv",
                     center: [131.034742, -25.345113],
                     zoom: 4,
@@ -87,8 +87,8 @@
 
                 //Basemap gallery block
                 if (config.basemapGallery) {
-                    var basemapGallery = new BasemapGallery();
-                    var bgExpand = new Expand();
+                    let basemapGallery = new BasemapGallery();
+                    let bgExpand = new Expand();
                     loadBaseMapGallery(basemapGallery, bgExpand, view);
                 }
             })
@@ -100,8 +100,8 @@
         if (leg > flyfeatures.length) {
             return;
         }
-        var lat = parseFloat(flyfeatures[leg].attributes.latitude);
-        var lng = parseFloat(flyfeatures[leg].attributes.longitude);
+        let lat = parseFloat(flyfeatures[leg].attributes.latitude);
+        let lng = parseFloat(flyfeatures[leg].attributes.longitude);
 
         flyview
             .goTo(

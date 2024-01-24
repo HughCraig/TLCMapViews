@@ -1,5 +1,5 @@
-var urlParams = new URLSearchParams(window.location.search);
-var urltoload = urlParams.get("load");
+let urlParams = new URLSearchParams(window.location.search);
+let urltoload = urlParams.get("load");
 console.log(urltoload);
 
 require([
@@ -9,16 +9,16 @@ require([
     "esri/geometry/Extent"
 ], function (Map, GeoJSONLayer, MapView) {
 
-    var url = urltoload;
+    let url = urltoload;
     //urltoload;
 
-    var template = {
+    let template = {
         title: "{name}",
         content: getInfo,
         outFields: ["*"]
     };
 
-    var renderer = {
+    let renderer = {
         type: "simple",
         field: "mag",
         symbol: {
@@ -34,7 +34,7 @@ require([
     // The function used for the PopupTemplate
     function getInfo(feature) {
         try {
-            var graphic, attributes, content;
+            let graphic, attributes, content;
             graphic = feature.graphic;
             attributes = graphic.attributes;
 
@@ -47,8 +47,8 @@ require([
                 content = content + "<tr><td>Description</td><td>" + attributes["description"] + "</td></tr>";
             }
 
-            var specialatts = ["OBJECTID", "id", "title", "name", "description", "layer", "TLCMapLinkBack", "TLCMapDataset"]; // for ignoring in loop that displays all the data incl. extended data
-            var specialdisplay = {
+            let specialatts = ["OBJECTID", "id", "title", "name", "description", "layer", "TLCMapLinkBack", "TLCMapDataset"]; // for ignoring in loop that displays all the data incl. extended data
+            let specialdisplay = {
                 "placename": "Place Name",
                 "StartDate": "Date Start",
                 "EndDate": "Date End",
@@ -100,7 +100,7 @@ require([
                     continue;
                 } // don't display things to ignore or handled sepera
 
-                var val = attributes[key].toString();
+                let val = attributes[key].toString();
 
                 if (val.startsWith("http")) {
                     val = "<a href='" + val + "'>" + val + "</a>";
@@ -124,7 +124,7 @@ require([
         }
     }
 
-    var geojsonLayer = new GeoJSONLayer({
+    let geojsonLayer = new GeoJSONLayer({
         url: url,
         copyright: "Check copyright and permissions of this dataset at http://tlcmap.org/ghap.",
         popupTemplate: template,
@@ -132,13 +132,13 @@ require([
     });
 
 
-    var map = new Map({
+    let map = new Map({
         basemap: "hybrid",
         ground: "world-elevation",
         layers: [geojsonLayer]
     });
 
-    var view = new MapView({
+    let view = new MapView({
         container: "viewDiv",
         center: [131.034742, -25.345113],
         zoom: 3,

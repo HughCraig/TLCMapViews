@@ -1,7 +1,7 @@
-var urlParams = new URLSearchParams(window.location.search);
+let urlParams = new URLSearchParams(window.location.search);
 
 $(document).ready(function () {
-    var userpars = ["name", "description", "id", "linkback"];
+    let userpars = ["name", "description", "id", "linkback"];
     for (i = 0; i < userpars.length; i++) {
         if (urlParams.get(userpars[i])) {
             if (userpars[i] === "linkback") {
@@ -19,7 +19,7 @@ $(document).ready(function () {
 
 function getCenterCoords() {
     console.log(urlParams);
-    var latlng = urlParams.get('latlng');
+    let latlng = urlParams.get('latlng');
     console.log(llswitch(latlng));
     return llswitch(latlng)
 
@@ -37,7 +37,7 @@ require(["esri/Map", "esri/views/SceneView",
     "esri/layers/GraphicsLayer"], function (Map, SceneView, Graphic, GraphicsLayer) {
 
 
-    var map = new Map({
+    let map = new Map({
         basemap: "hybrid",
         ground: "world-elevation"
     });
@@ -45,11 +45,11 @@ require(["esri/Map", "esri/views/SceneView",
 
     // we want a marker at the coords (note latlng is switched to lnglat which is arcgis convention) but we want the camera standing a bit off from it so you can see it, and at elevation. 2228 is height of Mt Kosciusko/Jagungal.
     placecoords = getCenterCoords();
-    var campos = [placecoords[0], placecoords[1] - 0.1, 2228];
+    let campos = [placecoords[0], placecoords[1] - 0.1, 2228];
 
 
     // set the scene and camera angle.
-    var view = new SceneView({
+    let view = new SceneView({
         container: "viewDiv", // Reference to the scene div created in step 5
         map: map, // Reference to the map object created before the scene
         scale: 50000000, // Sets the initial scale to 1:50,000,000
@@ -61,15 +61,15 @@ require(["esri/Map", "esri/views/SceneView",
     });
 
 
-    var graphicsLayer = new GraphicsLayer();
+    let graphicsLayer = new GraphicsLayer();
     map.add(graphicsLayer);
-    var point = {
+    let point = {
         type: "point",
         longitude: placecoords[0],
         latitude: placecoords[1]
     };
 
-    var simpleMarkerSymbol = {
+    let simpleMarkerSymbol = {
         type: "simple-marker",
         color: [226, 119, 40], // orange
         outline: {
@@ -78,7 +78,7 @@ require(["esri/Map", "esri/views/SceneView",
         }
     };
 
-    var pointGraphic = new Graphic({
+    let pointGraphic = new Graphic({
         geometry: point,
         symbol: simpleMarkerSymbol
     });

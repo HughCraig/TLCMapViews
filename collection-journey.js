@@ -88,10 +88,10 @@
                                 });
                                 graphicsLayer.add(point);
                             } else if (feature.geometry.type === "LineString") {
-                                var lineStringPaths = [];
+                                let lineStringPaths = [];
 
                                 let promise = (async (feature) => {
-                                    var modifiedJourneyLines =
+                                    let modifiedJourneyLines =
                                         await modifyJourneyLines(
                                             feature.geometry.coordinates,
                                             Polyline,
@@ -262,8 +262,8 @@
 
                 //Basemap gallery block
                 if (config.basemapGallery) {
-                    var basemapGallery = new BasemapGallery();
-                    var bgExpand = new Expand();
+                    let basemapGallery = new BasemapGallery();
+                    let bgExpand = new Expand();
                     loadBaseMapGallery(basemapGallery, bgExpand, view);
                 }
             })

@@ -113,7 +113,7 @@ function loadPopUpTemplate(config) {
         }
     };
 
-    var template = {
+    let template = {
         title: formatTitle,
         content: formatContent,
         outFields: ["*"],
@@ -128,7 +128,7 @@ function loadPopUpTemplate(config) {
  * @returns ArcGIS Renderer object
  */
 function loadRenderer(config) {
-    var renderer = {
+    let renderer = {
         type: "unique-value",
         defaultSymbol: { type: "simple-fill" },
         field: "tlcMapUniqueId", // The name of the attribute field containing types or categorical values referenced in uniqueValueInfos or uniqueValueGroups

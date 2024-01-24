@@ -1,6 +1,6 @@
 (function () {
-    var urlParams = new URLSearchParams(window.location.search);
-    var urltoload = urlParams.get("load");
+    let urlParams = new URLSearchParams(window.location.search);
+    let urltoload = urlParams.get("load");
 
     /**
      * filters features from a GeoJSON data object by their geometry type.
@@ -13,7 +13,7 @@
      * @return {object} A new GeoJSON data object including only features of the specified geometry type.
      */
     function filterDataByGeometryType(data, geometryType) {
-        var filteredFeatures = data.features.filter(
+        let filteredFeatures = data.features.filter(
             (feature) => feature.geometry.type === geometryType
         );
         return {
@@ -46,14 +46,14 @@
     ) {
         loadConfig(urltoload)
             .then((config) => {
-                var map = new Map({
+                let map = new Map({
                     basemap: config.basemap,
                     ground: "world-elevation",
                     layers: [],
                 });
 
-                var pointData = filterDataByGeometryType(config.data, "Point");
-                var lineData = filterDataByGeometryType(
+                let pointData = filterDataByGeometryType(config.data, "Point");
+                let lineData = filterDataByGeometryType(
                     config.data,
                     "LineString"
                 );
@@ -76,14 +76,14 @@
                 });
                 map.layers.add(geojsonPointLayer);
 
-                var geojsonLineLayer = null;
-                var lineGeoJson = {
+                let geojsonLineLayer = null;
+                let lineGeoJson = {
                     type: "FeatureCollection",
                     features: [],
                 };
                 if (lineData.features.length > 0) {
                     let promises = lineData.features.map(async (feature) => {
-                        var modifiedJourneyLines = await modifyJourneyLines(
+                        let modifiedJourneyLines = await modifyJourneyLines(
                             feature.geometry.coordinates,
                             Polyline,
                             geodesicUtils,
@@ -145,7 +145,7 @@
                     });
                 }
 
-                var view = new SceneView({
+                let view = new SceneView({
                     container: "viewDiv",
                     center: [131.034742, -25.345113],
                     zoom: 3,
@@ -167,8 +167,8 @@
 
                 //Basemap gallery block
                 if (config.basemapGallery) {
-                    var basemapGallery = new BasemapGallery();
-                    var bgExpand = new Expand();
+                    let basemapGallery = new BasemapGallery();
+                    let bgExpand = new Expand();
                     loadBaseMapGallery(basemapGallery, bgExpand, view);
                 }
             })
