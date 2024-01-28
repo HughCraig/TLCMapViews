@@ -23,11 +23,11 @@ function findCrossingCoordinatesAtIDL(paths) {
         return null;
     }
     let res = null;
-    let epsilon = 0.000001;
+    const epsilon = 0.000001;
 
     paths.forEach((coordinates) => {
         coordinates.forEach((coordinate) => {
-            let longitude = coordinate[0];
+            const longitude = coordinate[0];
 
             if (
                 Math.abs(longitude - 180) < epsilon ||
@@ -92,7 +92,7 @@ async function modifyJourneyLines(
                     densifiedPolyline
                 );
 
-            let crossingCoordinates = findCrossingCoordinatesAtIDL(
+            const crossingCoordinates = findCrossingCoordinatesAtIDL(
                 normalizedGeometry[0].paths
             );
 

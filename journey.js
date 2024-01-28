@@ -1,6 +1,6 @@
 (function () {
-    let urlParams = new URLSearchParams(window.location.search);
-    let urltoload = urlParams.get("load");
+    const urlParams = new URLSearchParams(window.location.search);
+    const urltoload = urlParams.get("load");
 
     /**
      * filters features from a GeoJSON data object by their geometry type.
@@ -13,7 +13,7 @@
      * @return {object} A new GeoJSON data object including only features of the specified geometry type.
      */
     function filterDataByGeometryType(data, geometryType) {
-        let filteredFeatures = data.features.filter(
+        const filteredFeatures = data.features.filter(
             (feature) => feature.geometry.type === geometryType
         );
         return {
@@ -52,8 +52,8 @@
                     layers: [],
                 });
 
-                let pointData = filterDataByGeometryType(config.data, "Point");
-                let lineData = filterDataByGeometryType(
+                const pointData = filterDataByGeometryType(config.data, "Point");
+                const lineData = filterDataByGeometryType(
                     config.data,
                     "LineString"
                 );
@@ -82,8 +82,8 @@
                     features: [],
                 };
                 if (lineData.features.length > 0) {
-                    let promises = lineData.features.map(async (feature) => {
-                        let modifiedJourneyLines = await modifyJourneyLines(
+                    const promises = lineData.features.map(async (feature) => {
+                        const modifiedJourneyLines = await modifyJourneyLines(
                             feature.geometry.coordinates,
                             Polyline,
                             geodesicUtils,
@@ -91,7 +91,7 @@
                         );
 
                         modifiedJourneyLines.forEach((coordinates) => {
-                            let lineFeature = {
+                            const lineFeature = {
                                 type: "Feature",
                                 geometry: {
                                     type: "LineString",

@@ -3,8 +3,8 @@
     let leg = 0; // just to keep track fo where we are in the journey
     let flyview;
 
-    let urlParams = new URLSearchParams(window.location.search);
-    let urltoload = urlParams.get("load");
+    const urlParams = new URLSearchParams(window.location.search);
+    const urltoload = urlParams.get("load");
 
     require([
         "esri/Map",

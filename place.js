@@ -1,4 +1,4 @@
-let urlParams = new URLSearchParams(window.location.search);
+const urlParams = new URLSearchParams(window.location.search);
 
 $(document).ready(function () {
     let userpars = ["name", "description", "id", "linkback"];

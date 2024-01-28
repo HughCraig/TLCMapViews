@@ -399,7 +399,7 @@ function purifyContent(content) {
     // Define a function to recursively check and clean nodes
     function checkNode(node) {
         // Define the allowed attributes for each tag
-        let allowedAttributes = {
+        const allowedAttributes = {
             a: ["href", "target"],
             div: ["class"],
             p: [],
@@ -420,7 +420,7 @@ function purifyContent(content) {
         };
 
         // Get the current node name
-        let nodeName = node.nodeName.toLowerCase();
+        const nodeName = node.nodeName.toLowerCase();
 
         // If the current node is one of the specified tags
         if (allowedAttributes.hasOwnProperty(nodeName)) {
@@ -428,7 +428,7 @@ function purifyContent(content) {
             let attributes = allowedAttributes[nodeName];
 
             // Get all attributes of the current node
-            let nodeAttributes = node.attributes;
+            const nodeAttributes = node.attributes;
 
             for (let i = nodeAttributes.length - 1; i >= 0; i--) {
                 // If the attribute is not in the list of allowed attributes, remove it

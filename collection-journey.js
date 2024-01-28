@@ -90,7 +90,7 @@
                             } else if (feature.geometry.type === "LineString") {
                                 let lineStringPaths = [];
 
-                                let promise = (async (feature) => {
+                                const promise = (async (feature) => {
                                     let modifiedJourneyLines =
                                         await modifyJourneyLines(
                                             feature.geometry.coordinates,

@@ -1,5 +1,5 @@
-let urlParams = new URLSearchParams(window.location.search);
-let urltoload = urlParams.get("load");
+const urlParams = new URLSearchParams(window.location.search);
+const urltoload = urlParams.get("load");
 console.log(urltoload);
 
 require([
