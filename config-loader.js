@@ -46,11 +46,11 @@ function loadConfig(urltoload) {
             .then((data) => {
                 //global configurations
                 if (data.hasOwnProperty("display")) {
-                    var display = data.display;
+                    let display = data.display;
 
                     //Info block
                     if (display.hasOwnProperty("info")) {
-                        var info = display.info;
+                        let info = display.info;
 
                         if (info.hasOwnProperty("display")) {
                             // Info block configurations
@@ -393,13 +393,13 @@ function purifyContent(content) {
         return content;
     }
 
-    var parser = new DOMParser();
-    var doc = parser.parseFromString(content, "text/html");
+    let parser = new DOMParser();
+    let doc = parser.parseFromString(content, "text/html");
 
     // Define a function to recursively check and clean nodes
     function checkNode(node) {
         // Define the allowed attributes for each tag
-        var allowedAttributes = {
+        const allowedAttributes = {
             a: ["href", "target"],
             div: ["class"],
             p: [],
@@ -420,17 +420,17 @@ function purifyContent(content) {
         };
 
         // Get the current node name
-        var nodeName = node.nodeName.toLowerCase();
+        const nodeName = node.nodeName.toLowerCase();
 
         // If the current node is one of the specified tags
         if (allowedAttributes.hasOwnProperty(nodeName)) {
             // Get the list of allowed attributes for this tag
-            var attributes = allowedAttributes[nodeName];
+            let attributes = allowedAttributes[nodeName];
 
             // Get all attributes of the current node
-            var nodeAttributes = node.attributes;
+            const nodeAttributes = node.attributes;
 
-            for (var i = nodeAttributes.length - 1; i >= 0; i--) {
+            for (let i = nodeAttributes.length - 1; i >= 0; i--) {
                 // If the attribute is not in the list of allowed attributes, remove it
                 if (!attributes.includes(nodeAttributes[i].name)) {
                     node.removeAttribute(nodeAttributes[i].name);
@@ -439,7 +439,7 @@ function purifyContent(content) {
         }
 
         // Recursively check all child nodes
-        for (var i = 0; i < node.childNodes.length; i++) {
+        for (let i = 0; i < node.childNodes.length; i++) {
             checkNode(node.childNodes[i]);
         }
     }
@@ -460,7 +460,7 @@ function purifyContent(content) {
  * @returns an object contains the title and content for pop up template
  */
 function buildDefaultPopup(feature, config) {
-    var title = "";
+    let title = "";
 
     if (feature.geometry.type === "Point") {
         title =
@@ -566,9 +566,9 @@ function buildPopupContentTable(
         return null;
     }
     const properties = feature.properties;
-    var urlPattern =
+    let urlPattern =
         /^(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})$/gi;
-    var urlRegex = new RegExp(urlPattern);
+    let urlRegex = new RegExp(urlPattern);
 
     let res = "<div><table class='esri-widget__table'>";
 

@@ -1,7 +1,7 @@
 // The function used for the PopupTemplate
 function getInfo(feature) {
     try {
-        var graphic, attributes, content;
+        let graphic, attributes, content;
         graphic = feature.graphic;
         attributes = graphic.attributes;
 
@@ -14,8 +14,8 @@ function getInfo(feature) {
             content = content + "<tr><td>Description</td><td>" + attributes["description"] + "</td></tr>";
         }
 
-        var specialatts = ["OBJECTID", "__OBJECTID", "id", "title", "name", "description", "udatestart", "udateend", "layer", "TLCMapLinkBack", "TLCMapDataset"]; // for ignoring in loop that displays all the data incl. extended data
-        var specialdisplay = {
+        let specialatts = ["OBJECTID", "__OBJECTID", "id", "title", "name", "description", "udatestart", "udateend", "layer", "TLCMapLinkBack", "TLCMapDataset"]; // for ignoring in loop that displays all the data incl. extended data
+        let specialdisplay = {
             "placename": "Place Name",
             "StartDate": "Date Start",
             "EndDate": "Date End",
@@ -67,7 +67,7 @@ function getInfo(feature) {
                 continue;
             } // don't display things to ignore or handled sepera
 
-            var val = attributes[key].toString();
+            let val = attributes[key].toString();
 
             if (val.startsWith("http")) {
                 val = "<a href='" + val + "'>" + val + "</a>";

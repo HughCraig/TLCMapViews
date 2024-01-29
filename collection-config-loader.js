@@ -38,11 +38,11 @@ function loadCollectionConfig(urltoload) {
             .then((data) => {
                 //global configurations
                 if (data.display) {
-                    var display = data.display;
+                    let display = data.display;
 
                     //Info block
                     if (display.hasOwnProperty("info")) {
-                        var info = display.info;
+                        let info = display.info;
 
                         // Hide/show
                         if (info.hasOwnProperty("display")) {
@@ -136,7 +136,7 @@ function loadCollectionConfig(urltoload) {
                     }
                 }
 
-                var loadPromises;
+                let loadPromises;
                 //Load individual dataset
                 if (
                     data.datasets !== undefined &&
@@ -193,7 +193,7 @@ function loadCollectionConfig(urltoload) {
  *
  */
 function createLayerInfoPanelElement(layerData, colorGen) {
-    var color = colorGen.generate();
+    let color = colorGen.generate();
 
     const propElement = $("<div></div>").css({
         "padding-left": "13px",
