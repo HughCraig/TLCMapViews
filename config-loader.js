@@ -170,7 +170,16 @@ function loadConfig(data) {
 
         if (display.hasOwnProperty("popupOnHover")) {
             config["popupOnHover"] = display.postBack;
+
+            if (display.hasOwnProperty("keepPopupOfHover")) {
+                config["keepPopupOfHover"] = display.keepPopupOfHover;
+            }
         }
+
+        if (display.hasOwnProperty("viewExtentExpand")) {
+            config["viewExtentExpand"] = display.viewExtentExpand;
+        }
+         
     }
 
     //Pop up template for indivisual feature configurations

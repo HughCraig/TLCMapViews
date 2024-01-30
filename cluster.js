@@ -2,6 +2,7 @@
     initializeMap("MapView");
     var urlParams = new URLSearchParams(window.location.search);
     var urltoload = urlParams.get("load");
+    var map, view, infoDivExpand, bgExpand, handler;
 
     if (urltoload !== null && urltoload !== "") {
         const geojsonData = await loadFromUrl(urltoload);
@@ -13,14 +14,15 @@
                 const geojson = event.data;
                 if (geojson && geojson.type === "FeatureCollection") {
                     loadGeoJson(geojson);
+                    if(view){
+                        view.popup.close();
+                    }
                 }
             },
             false
         );
     }
-
-    var map , view , infoDivExpand , bgExpand;
-
+  
     function loadGeoJson(geojsonData) {
         require([
             "esri/Map",
@@ -89,8 +91,8 @@
                     ground: "world-elevation",
                 });
             }
-            
-            if(!view){
+
+            if (!view) {
                 view = new MapView({
                     container: "viewDiv",
                     center: [131.034742, -25.345113],
@@ -118,43 +120,47 @@
             view.map.layers.removeAll();
             view.map.layers.add(geojsonLayer);
 
-            if(config.popupOnHover){
-                view.on("pointer-move", function (event) {
+            //Pop up on hover config
+            if (config.popupOnHover) {
+                if (handler) {
+                    handler.remove();
+                }
+                handler = view.on("pointer-move", function (event) {
                     view.hitTest(event).then(function (response) {
                         if (response.results.length) {
                             var graphic = response.results.filter(function (
                                 result
                             ) {
-                                // check if the graphic belongs to the layer of interest
                                 return result.graphic.layer === geojsonLayer;
                             })[0].graphic;
                             view.popup.open({
                                 location: graphic.geometry.centroid,
                                 features: [graphic],
                             });
-                        } else {
+                        } else if (!config.keepPopupOfHover) {
                             view.popup.close();
                         }
                     });
                 });
             }
-           
-            // Click point to post back 
-            if(config.postBack){
+
+            // Click point to post back
+            if (config.postBack) {
                 view.on("click", function (event) {
                     view.hitTest(event).then(function (response) {
                         if (
                             response.results.length > 0 &&
                             response.results[0].graphic
                         ) {
-                            var attributes = response.results[0].graphic.attributes;
+                            var attributes =
+                                response.results[0].graphic.attributes;
                             window.parent.postMessage(
                                 {
                                     event: "popupClicked",
                                     details: attributes,
                                 },
                                 "*"
-                            );
+                            );                           
                         }
                     });
                 });
@@ -162,6 +168,9 @@
 
             geojsonLayer.queryExtent().then(function (results) {
                 // go to the extent of the results satisfying the query
+                if(config.viewExtentExpand){
+                    results.extent.expand(config.viewExtentExpand);
+                }
                 view.goTo(results.extent);
             });
 
