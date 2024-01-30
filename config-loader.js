@@ -167,6 +167,10 @@ function loadConfig(data) {
         if (display.hasOwnProperty("postBack")) {
             config["postBack"] = display.postBack;
         }
+
+        if (display.hasOwnProperty("popupOnHover")) {
+            config["popupOnHover"] = display.postBack;
+        }
     }
 
     //Pop up template for indivisual feature configurations
