@@ -1,6 +1,7 @@
 (async function () {
     var urlParams = new URLSearchParams(window.location.search);
     var urltoload = urlParams.get("load");
+    var map, view, infoDivExpand, bgExpand, handler;
 
     if (urltoload !== null && urltoload !== "") {
         const geojsonData = await loadFromUrl(urltoload);
@@ -51,18 +52,68 @@
                 outFields: ["*"],
             });
 
-            var map = new Map({
-                basemap: config.basemap,
-                ground: "world-elevation",
-                layers: [geojsonLayer],
-            });
+            if (!map || map.basemap != config.basemap) {
+                map = new Map({
+                    basemap: config.basemap,
+                    ground: "world-elevation",
+                    layers: [geojsonLayer],
+                });
+            }
+           
+            if (!view) {
+                view = new SceneView({
+                    container: "viewDiv",
+                    center: [131.034742, -25.345113],
+                    zoom: 3,
+                    map: map,
+                });
+            }
 
-            var view = new SceneView({
-                container: "viewDiv",
-                center: [131.034742, -25.345113],
-                zoom: 3,
-                map: map,
-            });
+            //Pop up on hover config
+            if (config.popupOnHover) {
+                if (handler) {
+                    handler.remove();
+                }
+                handler = view.on("pointer-move", function (event) {
+                    view.hitTest(event).then(function (response) {
+                        if (response.results.length) {
+                            var graphic = response.results.filter(function (
+                                result
+                            ) {
+                                return result.graphic.layer === geojsonLayer;
+                            })[0].graphic;
+                            view.popup.open({
+                                location: graphic.geometry.centroid,
+                                features: [graphic],
+                            });
+                        } else if (!config.keepPopupOfHover) {
+                            view.popup.close();
+                        }
+                    });
+                });
+            }
+
+            // Click point to post back
+            if (config.postBack) {
+                view.on("click", function (event) {
+                    view.hitTest(event).then(function (response) {
+                        if (
+                            response.results.length > 0 &&
+                            response.results[0].graphic
+                        ) {
+                            var attributes =
+                                response.results[0].graphic.attributes;
+                            window.parent.postMessage(
+                                {
+                                    event: "popupClicked",
+                                    details: attributes,
+                                },
+                                "*"
+                            );                           
+                        }
+                    });
+                });
+            }
 
             //Not sure why but timeout is needed to avoid the 'AbortError' Promise error.
             //This problem could happens on the original code as well(30% change) which prevent the initial zoom/center setting
@@ -74,14 +125,14 @@
 
             //Info block
             if (config.infoDisplay != "disabled") {
-                const infoDivExpand = new Expand();
+                infoDivExpand = new Expand();
                 loadInfoBlock(config, infoDivExpand, view);
             }
 
             //Basemap gallery block
             if (config.basemapGallery) {
                 var basemapGallery = new BasemapGallery();
-                var bgExpand = new Expand();
+                bgExpand = new Expand();
                 loadBaseMapGallery(basemapGallery, bgExpand, view);
             }
         });
