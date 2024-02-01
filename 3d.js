@@ -118,10 +118,28 @@
             //Not sure why but timeout is needed to avoid the 'AbortError' Promise error.
             //This problem could happens on the original code as well(30% change) which prevent the initial zoom/center setting
             geojsonLayer.queryExtent().then(function (results) {
-                setTimeout(function () {
-                    view.goTo(results.extent);
-                }, 800);
+                if (config.data.features.length == 1) {
+                    var feature = config.data.features[0];
+                    var centerPoint = {
+                        type: "point",
+                        longitude: feature.geometry.coordinates[0],
+                        latitude: feature.geometry.coordinates[1]
+                    };
+            
+                    setTimeout(function () {
+                        view.center = config.data.features[0].geometry.coordinates;
+                        view.goTo({
+                            target: centerPoint,
+                            zoom: 13
+                        })
+                    }, 800);
+                }else{
+                    setTimeout(function () {
+                        view.goTo(results.extent);
+                    }, 800);
+                }
             });
+            
 
             //Info block
             if (config.infoDisplay != "disabled") {
