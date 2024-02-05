@@ -134,6 +134,9 @@
                         })
                     }, 800);
                 }else{
+                    if(config.viewExtentExpand){
+                        results.extent.expand(config.viewExtentExpand);
+                    }
                     setTimeout(function () {
                         view.goTo(results.extent);
                     }, 800);
