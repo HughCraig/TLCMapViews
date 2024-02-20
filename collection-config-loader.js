@@ -161,6 +161,22 @@ function loadCollectionConfig(urltoload) {
                                     });
                                 })
                                 .catch((err) => console.error(err));
+                        } else if(dataset.features){
+                            //Geojson in dataset directly
+                            return loadConfig(null , dataset)
+                                .then((datasetConfig) => {
+                                    config.datasetsConfig.push({
+                                        id: index,
+                                        name: dataset.name,
+                                        layerContent:
+                                            createLayerInfoPanelElement(
+                                                dataset,
+                                                colorGen
+                                            ),
+                                        config: datasetConfig,
+                                    });
+                                })
+                                .catch((err) => console.error(err));
                         } else {
                             return Promise.resolve();
                         }
