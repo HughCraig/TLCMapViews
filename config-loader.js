@@ -1,7 +1,7 @@
 /**
- * The loadConfig function fetches and processes a configuration Object from the geojson url.
+ * The loadConfig function fetches and processes a configuration Object from the geojson url or directly from a provided data..
  * It provides default configurations for various elements and overrides them with values
- * from the fetched url if they exist.
+ * from the fetched url or data if they exist.
  * This function handles settings for display options, pop-up features, base map styles,
  * and other individual configurable elements.
  *
@@ -9,9 +9,10 @@
  * which can include a custom content string, a default table of properties, and custom links.
  *
  * @param {string} urltoload - The URL to load the configuration file from.
+ * @param {object} data - Directly provided geoJson data. 
  * @return {Promise<object>} A promise that resolves to the final configuration object.
  */
-function loadConfig(urltoload) {
+function loadConfig(urltoload , data = null) {
     const defaultBlockedFields = new Set(["tlcMapUniqueId"]);
 
     let config = {
@@ -36,336 +37,342 @@ function loadConfig(urltoload) {
         popupLinks: null,
     };
 
-    if (urltoload == null) {
+    if (data) {
+        return Promise.resolve(processGeoJsonData(data, config));
+    } else if (urltoload ) {
+        return new Promise((resolve, reject) => {
+            fetch(urltoload)
+                .then((response) => response.json())
+                .then((data) => {
+                    resolve(processGeoJsonData(data, config));
+                })
+                .catch((err) => {
+                    console.error(err);
+                    config.titleText = "Error: Unable to load GeoJSON data from the specified URL";
+                    config["data"] = { features: [] };
+                    resolve(config);
+                });
+        });
+    } else {
         return Promise.resolve(config);
     }
 
-    return new Promise((resolve, reject) => {
-        fetch(urltoload)
-            .then((response) => response.json())
-            .then((data) => {
-                //global configurations
-                if (data.hasOwnProperty("display")) {
-                    var display = data.display;
+    // Function to process geojson data
+    function processGeoJsonData(data, config) {
+         //global configurations
+         if (data.hasOwnProperty("display")) {
+            let display = data.display;
 
-                    //Info block
-                    if (display.hasOwnProperty("info")) {
-                        var info = display.info;
+            //Info block
+            if (display.hasOwnProperty("info")) {
+                let info = display.info;
 
-                        if (info.hasOwnProperty("display")) {
-                            // Info block configurations
-                            switch (info.display) {
-                                case "enabled":
-                                    config["infoDisplay"] = "default";
-                                    break;
-                                case "disabled":
-                                    config["infoDisplay"] = "disabled";
-                                    break;
-                                case "hidden":
-                                    config["infoDisplay"] = "hidden";
-                                    break;
-                            }
-                        }
-
-                        //logo
-                        if (
-                            info.hasOwnProperty("logo") &&
-                            typeof info.logo === "string"
-                        ) {
-                            config["logo"] = info.logo;
-                            config["logoLink"] = null; //Remove logo link if custom logo is provided
-                        }
-
-                        //title
-                        if (info.hasOwnProperty("title")) {
-                            if (typeof info.title === "string") {
-                                config["titleText"] = info.title;
-                            } else if (typeof info.title === "object") {
-                                config["titleText"] = info.title.hasOwnProperty(
-                                    "text"
-                                )
-                                    ? info.title.text
-                                    : null;
-                                config["titleLink"] = info.title.hasOwnProperty(
-                                    "link"
-                                )
-                                    ? info.title.link
-                                    : null;
-                                if (info.title.target) {
-                                    config["titleLinkTarget"] =
-                                        info.title.target;
-                                }
-                            }
-                        }
-
-                        //content
-                        if (info.hasOwnProperty("content")) {
-                            config["content"] = purifyContent(info.content);
-                        }
+                if (info.hasOwnProperty("display")) {
+                    // Info block configurations
+                    switch (info.display) {
+                        case "enabled":
+                            config["infoDisplay"] = "default";
+                            break;
+                        case "disabled":
+                            config["infoDisplay"] = "disabled";
+                            break;
+                        case "hidden":
+                            config["infoDisplay"] = "hidden";
+                            break;
                     }
+                }
 
-                    //base map gallery
-                    if (display.hasOwnProperty("basemapGallery")) {
-                        config["basemapGallery"] =
-                            typeof display.basemapGallery === "boolean"
-                                ? display.basemapGallery
-                                : true;
-                    }
+                //logo
+                if (
+                    info.hasOwnProperty("logo") &&
+                    typeof info.logo === "string"
+                ) {
+                    config["logo"] = info.logo;
+                    config["logoLink"] = null; //Remove logo link if custom logo is provided
+                }
 
-                    //base map
-                    if (
-                        display.hasOwnProperty("basemap") &&
-                        typeof display.basemap === "string"
-                    ) {
-                        config["basemap"] = getMapStyle(display.basemap);
-                    }
-
-                    //Color
-                    if (display.hasOwnProperty("color")) {
-                        config["color"] = display.color;
-                    }
-
-                    //Cluster color
-                    if (display.hasOwnProperty("clusterColor")) {
-                        config["clusterColor"] = display.clusterColor;
-                    }
-
-                    //Cluster font color
-                    if (display.hasOwnProperty("clusterFontColor")) {
-                        config["clusterFontColor"] = display.clusterFontColor;
-                    }
-
-                    // Popup template
-                    if (display.hasOwnProperty("popup")) {
-                        //disable pop up
-                        if (display.popup === false) {
-                            config["popupEnabled"] = false;
-                        }
-
-                        // Custom title
-                        if (display.popup.title) {
-                            config["popupTitle"] = display.popup.title;
-                        }
-
-                        // Custom content
-                        if (display.popup.content) {
-                            config["popupContent"] = display.popup.content;
-                        }
-
-                        // popup allowed fields
-                        if (
-                            display.popup.allowedFields &&
-                            Array.isArray(display.popup.allowedFields)
-                        ) {
-                            if (
-                                display.popup.allowedFields !== 1 &&
-                                display.popup.allowedFields[0] !== "*"
-                            ) {
-                                // case for ["*"]
-                                config["popupAllowedFields"] = new Set(
-                                    display.popup.allowedFields
-                                );
-                            }
-                        }
-
-                        // popup blocked fields
-                        if (
-                            display.popup.blockedFields &&
-                            Array.isArray(display.popup.blockedFields)
-                        ) {
-                            display.popup.blockedFields.forEach((field) => {
-                                defaultBlockedFields.add(field);
-                            });
-                        }
-
-                        // popup field labels
-                        if (display.popup.fieldLabels) {
-                            config["popupFieldLabels"] = new Map(
-                                Object.entries(display.popup.fieldLabels)
-                            );
-                        }
-
-                        // popup links
-                        if (
-                            display.popup.links &&
-                            Array.isArray(display.popup.links)
-                        ) {
-                            config["popupLinks"] = display.popup.links;
+                //title
+                if (info.hasOwnProperty("title")) {
+                    if (typeof info.title === "string") {
+                        config["titleText"] = info.title;
+                    } else if (typeof info.title === "object") {
+                        config["titleText"] = info.title.hasOwnProperty(
+                            "text"
+                        )
+                            ? info.title.text
+                            : null;
+                        config["titleLink"] = info.title.hasOwnProperty(
+                            "link"
+                        )
+                            ? info.title.link
+                            : null;
+                        if (info.title.target) {
+                            config["titleLinkTarget"] =
+                                info.title.target;
                         }
                     }
                 }
 
-                //Pop up template for indivisual feature configurations
-                let popupTemplateMap = new Map();
-                if (data.features) {
-                    data.features.forEach((feature, index) => {
-                        if (!feature.properties) {
-                            feature.properties = {};
-                        }
+                //content
+                if (info.hasOwnProperty("content")) {
+                    config["content"] = purifyContent(info.content);
+                }
+            }
 
-                        feature.properties.tlcMapUniqueId = index; //Add id to properties.
-                        const id = index; //Use id (order) as distinct key
+            //base map gallery
+            if (display.hasOwnProperty("basemapGallery")) {
+                config["basemapGallery"] =
+                    typeof display.basemapGallery === "boolean"
+                        ? display.basemapGallery
+                        : true;
+            }
 
-                        //Load global configurtation first
-                        let { title, content } = buildDefaultPopup(
-                            feature,
-                            config
+            //base map
+            if (
+                display.hasOwnProperty("basemap") &&
+                typeof display.basemap === "string"
+            ) {
+                config["basemap"] = getMapStyle(display.basemap);
+            }
+
+            //Color
+            if (display.hasOwnProperty("color")) {
+                config["color"] = display.color;
+            }
+
+            //Cluster color
+            if (display.hasOwnProperty("clusterColor")) {
+                config["clusterColor"] = display.clusterColor;
+            }
+
+            //Cluster font color
+            if (display.hasOwnProperty("clusterFontColor")) {
+                config["clusterFontColor"] = display.clusterFontColor;
+            }
+
+            // Popup template
+            if (display.hasOwnProperty("popup")) {
+                //disable pop up
+                if (display.popup === false) {
+                    config["popupEnabled"] = false;
+                }
+
+                // Custom title
+                if (display.popup.title) {
+                    config["popupTitle"] = display.popup.title;
+                }
+
+                // Custom content
+                if (display.popup.content) {
+                    config["popupContent"] = display.popup.content;
+                }
+
+                // popup allowed fields
+                if (
+                    display.popup.allowedFields &&
+                    Array.isArray(display.popup.allowedFields)
+                ) {
+                    if (
+                        display.popup.allowedFields !== 1 &&
+                        display.popup.allowedFields[0] !== "*"
+                    ) {
+                        // case for ["*"]
+                        config["popupAllowedFields"] = new Set(
+                            display.popup.allowedFields
                         );
+                    }
+                }
 
-                        //Individual feature configurations will override global configurations
-                        if (feature.display && feature.display.popup) {
-                            const popUp = feature.display.popup;
-
-                            // Custom title . default: name.
-                            if (popUp.title) {
-                                const matches = popUp.title.match(/{(.*?)}/g);
-                                const variablesExist = matches
-                                    ? matches.every((match) =>
-                                          feature.properties.hasOwnProperty(
-                                              match.slice(1, -1)
-                                          )
-                                      )
-                                    : true;
-
-                                // If all variables exist, use the custom title, otherwise use the name
-                                if (variablesExist) {
-                                    title = popUp.title.replace(
-                                        /{(.*?)}/g,
-                                        (_, key) => feature.properties[key]
-                                    );
-                                }
-                            }
-
-                            // Custom content. Could be interpolation or static. for interpolation , must match all variables in properties , otherwise use default null
-                            if (popUp.content) {
-                                const matches = popUp.content.match(/{(.*?)}/g);
-                                const variablesExist = matches
-                                    ? matches.every((match) =>
-                                          feature.properties.hasOwnProperty(
-                                              match.slice(1, -1)
-                                          )
-                                      )
-                                    : true;
-
-                                if (variablesExist) {
-                                    let res = purifyContent(
-                                        popUp.content.replace(
-                                            /{(.*?)}/g,
-                                            (_, key) => feature.properties[key]
-                                        )
-                                    );
-
-                                    if (res && res != "") {
-                                        content.customContent = res; // Purify the content to prevent XSS
-                                    }
-                                }
-                            }
-
-                            //Default table content
-
-                            //Field labels
-                            let fieldLabels = popUp.hasOwnProperty(
-                                "fieldLabels"
-                            )
-                                ? new Map(Object.entries(popUp.fieldLabels))
-                                : config.popupFieldLabels;
-
-                            //Allowed fields
-                            let allowedFields = null;
-                            let allowAllFields = false;
-                            if (
-                                popUp.hasOwnProperty("allowedFields") &&
-                                Array.isArray(popUp.allowedFields)
-                            ) {
-                                if (
-                                    popUp.allowedFields.length === 1 &&
-                                    popUp.allowedFields[0] === "*"
-                                ) {
-                                    allowAllFields = true;
-                                } else {
-                                    allowedFields = new Set(
-                                        popUp.allowedFields
-                                    );
-                                }
-                            }
-
-                            allowedFields = allowAllFields
-                                ? null
-                                : allowedFields ?? config.popupAllowedFields;
-
-                            //Blocked fields
-                            let blockedFields =
-                                popUp.hasOwnProperty("blockedFields") &&
-                                Array.isArray(popUp.blockedFields)
-                                    ? new Set(popUp.blockedFields)
-                                    : config.popupBlockedFields;
-                            blockedFields.add("tlcMapUniqueId"); //Always block this field
-
-                            content.defaultTable = buildPopupContentTable(
-                                feature,
-                                fieldLabels,
-                                allowedFields,
-                                blockedFields
-                            );
-
-                            //Links
-                            if (
-                                popUp.hasOwnProperty("links") &&
-                                Array.isArray(popUp.links)
-                            ) {
-                                let links = [];
-                                popUp.links.forEach((link) => {
-                                    if (link.link && link.text) {
-                                        let dummyElement =
-                                            document.createElement("div");
-                                        dummyElement.innerText = link.text;
-                                        let safeText = dummyElement.innerHTML;
-
-                                        links.push(
-                                            `<a href="${link.link}" target="${
-                                                link.target
-                                                    ? link.target
-                                                    : "_blank"
-                                            }">${safeText}</a>`
-                                        );
-                                    }
-                                });
-                                content.customLink = `<div style="margin-top: 1rem;">${links.join(
-                                    " | "
-                                )}</div>`;
-                            }
-                        }
-
-                        let finalContent = "";
-                        if (content.customContent) {
-                            finalContent += content.customContent;
-                        }
-                        if (content.defaultTable) {
-                            finalContent += content.defaultTable;
-                        }
-                        if (content.customLink) {
-                            finalContent += content.customLink;
-                        }
-
-                        popupTemplateMap.set(id, {
-                            title,
-                            content: finalContent,
-                        });
+                // popup blocked fields
+                if (
+                    display.popup.blockedFields &&
+                    Array.isArray(display.popup.blockedFields)
+                ) {
+                    display.popup.blockedFields.forEach((field) => {
+                        defaultBlockedFields.add(field);
                     });
                 }
-                config["popupTemplateMap"] = popupTemplateMap;
-                config["data"] = data;
 
-                resolve(config);
-            })
-            .catch((err) => {
-                console.error(err); 
-                config.titleText = "Error: Unable to load GeoJSON data from the specified URL";
+                // popup field labels
+                if (display.popup.fieldLabels) {
+                    config["popupFieldLabels"] = new Map(
+                        Object.entries(display.popup.fieldLabels)
+                    );
+                }
 
-                config["data"] = { features: [] };
-                resolve(config); 
+                // popup links
+                if (
+                    display.popup.links &&
+                    Array.isArray(display.popup.links)
+                ) {
+                    config["popupLinks"] = display.popup.links;
+                }
+            }
+        }
+
+        //Pop up template for indivisual feature configurations
+        let popupTemplateMap = new Map();
+        if (data.features) {
+            data.features.forEach((feature, index) => {
+                if (!feature.properties) {
+                    feature.properties = {};
+                }
+
+                feature.properties.tlcMapUniqueId = index; //Add id to properties.
+                const id = index; //Use id (order) as distinct key
+
+                //Load global configurtation first
+                let { title, content } = buildDefaultPopup(
+                    feature,
+                    config
+                );
+
+                //Individual feature configurations will override global configurations
+                if (feature.display && feature.display.popup) {
+                    const popUp = feature.display.popup;
+
+                    // Custom title . default: name.
+                    if (popUp.title) {
+                        const matches = popUp.title.match(/{(.*?)}/g);
+                        const variablesExist = matches
+                            ? matches.every((match) =>
+                                  feature.properties.hasOwnProperty(
+                                      match.slice(1, -1)
+                                  )
+                              )
+                            : true;
+
+                        // If all variables exist, use the custom title, otherwise use the name
+                        if (variablesExist) {
+                            title = popUp.title.replace(
+                                /{(.*?)}/g,
+                                (_, key) => feature.properties[key]
+                            );
+                        }
+                    }
+
+                    // Custom content. Could be interpolation or static. for interpolation , must match all variables in properties , otherwise use default null
+                    if (popUp.content) {
+                        const matches = popUp.content.match(/{(.*?)}/g);
+                        const variablesExist = matches
+                            ? matches.every((match) =>
+                                  feature.properties.hasOwnProperty(
+                                      match.slice(1, -1)
+                                  )
+                              )
+                            : true;
+
+                        if (variablesExist) {
+                            let res = purifyContent(
+                                popUp.content.replace(
+                                    /{(.*?)}/g,
+                                    (_, key) => feature.properties[key]
+                                )
+                            );
+
+                            if (res && res != "") {
+                                content.customContent = res; // Purify the content to prevent XSS
+                            }
+                        }
+                    }
+
+                    //Default table content
+
+                    //Field labels
+                    let fieldLabels = popUp.hasOwnProperty(
+                        "fieldLabels"
+                    )
+                        ? new Map(Object.entries(popUp.fieldLabels))
+                        : config.popupFieldLabels;
+
+                    //Allowed fields
+                    let allowedFields = null;
+                    let allowAllFields = false;
+                    if (
+                        popUp.hasOwnProperty("allowedFields") &&
+                        Array.isArray(popUp.allowedFields)
+                    ) {
+                        if (
+                            popUp.allowedFields.length === 1 &&
+                            popUp.allowedFields[0] === "*"
+                        ) {
+                            allowAllFields = true;
+                        } else {
+                            allowedFields = new Set(
+                                popUp.allowedFields
+                            );
+                        }
+                    }
+
+                    allowedFields = allowAllFields
+                        ? null
+                        : allowedFields ?? config.popupAllowedFields;
+
+                    //Blocked fields
+                    let blockedFields =
+                        popUp.hasOwnProperty("blockedFields") &&
+                        Array.isArray(popUp.blockedFields)
+                            ? new Set(popUp.blockedFields)
+                            : config.popupBlockedFields;
+                    blockedFields.add("tlcMapUniqueId"); //Always block this field
+
+                    content.defaultTable = buildPopupContentTable(
+                        feature,
+                        fieldLabels,
+                        allowedFields,
+                        blockedFields
+                    );
+
+                    //Links
+                    if (
+                        popUp.hasOwnProperty("links") &&
+                        Array.isArray(popUp.links)
+                    ) {
+                        let links = [];
+                        popUp.links.forEach((link) => {
+                            if (link.link && link.text) {
+                                let dummyElement =
+                                    document.createElement("div");
+                                dummyElement.innerText = link.text;
+                                let safeText = dummyElement.innerHTML;
+
+                                links.push(
+                                    `<a href="${link.link}" target="${
+                                        link.target
+                                            ? link.target
+                                            : "_blank"
+                                    }">${safeText}</a>`
+                                );
+                            }
+                        });
+                        content.customLink = `<div style="margin-top: 1rem;">${links.join(
+                            " | "
+                        )}</div>`;
+                    }
+                }
+
+                let finalContent = "";
+                if (content.customContent) {
+                    finalContent += content.customContent;
+                }
+                if (content.defaultTable) {
+                    finalContent += content.defaultTable;
+                }
+                if (content.customLink) {
+                    finalContent += content.customLink;
+                }
+
+                popupTemplateMap.set(id, {
+                    title,
+                    content: finalContent,
+                });
             });
-    });
+        }
+        config["popupTemplateMap"] = popupTemplateMap;
+        config["data"] = data;
+
+        return config; 
+    }
 }
 
 /**
@@ -393,13 +400,13 @@ function purifyContent(content) {
         return content;
     }
 
-    var parser = new DOMParser();
-    var doc = parser.parseFromString(content, "text/html");
+    let parser = new DOMParser();
+    let doc = parser.parseFromString(content, "text/html");
 
     // Define a function to recursively check and clean nodes
     function checkNode(node) {
         // Define the allowed attributes for each tag
-        var allowedAttributes = {
+        const allowedAttributes = {
             a: ["href", "target"],
             div: ["class"],
             p: [],
@@ -420,17 +427,17 @@ function purifyContent(content) {
         };
 
         // Get the current node name
-        var nodeName = node.nodeName.toLowerCase();
+        const nodeName = node.nodeName.toLowerCase();
 
         // If the current node is one of the specified tags
         if (allowedAttributes.hasOwnProperty(nodeName)) {
             // Get the list of allowed attributes for this tag
-            var attributes = allowedAttributes[nodeName];
+            let attributes = allowedAttributes[nodeName];
 
             // Get all attributes of the current node
-            var nodeAttributes = node.attributes;
+            const nodeAttributes = node.attributes;
 
-            for (var i = nodeAttributes.length - 1; i >= 0; i--) {
+            for (let i = nodeAttributes.length - 1; i >= 0; i--) {
                 // If the attribute is not in the list of allowed attributes, remove it
                 if (!attributes.includes(nodeAttributes[i].name)) {
                     node.removeAttribute(nodeAttributes[i].name);
@@ -439,7 +446,7 @@ function purifyContent(content) {
         }
 
         // Recursively check all child nodes
-        for (var i = 0; i < node.childNodes.length; i++) {
+        for (let i = 0; i < node.childNodes.length; i++) {
             checkNode(node.childNodes[i]);
         }
     }
@@ -460,7 +467,7 @@ function purifyContent(content) {
  * @returns an object contains the title and content for pop up template
  */
 function buildDefaultPopup(feature, config) {
-    var title = "";
+    let title = "";
 
     if (feature.geometry.type === "Point") {
         title =
@@ -566,9 +573,9 @@ function buildPopupContentTable(
         return null;
     }
     const properties = feature.properties;
-    var urlPattern =
+    let urlPattern =
         /^(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})$/gi;
-    var urlRegex = new RegExp(urlPattern);
+    let urlRegex = new RegExp(urlPattern);
 
     let res = "<div><table class='esri-widget__table'>";
 

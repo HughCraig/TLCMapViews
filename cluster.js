@@ -1,6 +1,6 @@
 (function () {
-    var urlParams = new URLSearchParams(window.location.search);
-    var urltoload = urlParams.get("load");
+    const urlParams = new URLSearchParams(window.location.search);
+    const urltoload = urlParams.get("load");
 
     require([
         "esri/Map",
@@ -86,7 +86,7 @@
                 });
                 const newurl = URL.createObjectURL(blob);
 
-                var geojsonLayer = new GeoJSONLayer({
+                let geojsonLayer = new GeoJSONLayer({
                     url: newurl,
                     copyright:
                         "Check copyright and permissions of this dataset at http://tlcmap.org/ghap.",
@@ -96,13 +96,13 @@
                     popupEnabled: config.popupEnabled,
                 });
 
-                var map = new Map({
+                let map = new Map({
                     basemap: config.basemap,
                     ground: "world-elevation",
                     layers: [geojsonLayer],
                 });
 
-                var view = new MapView({
+                let view = new MapView({
                     container: "viewDiv",
                     center: [131.034742, -25.345113],
                     zoom: 3,
@@ -122,8 +122,8 @@
 
                 //Basemap gallery block
                 if (config.basemapGallery) {
-                    var basemapGallery = new BasemapGallery();
-                    var bgExpand = new Expand();
+                    let basemapGallery = new BasemapGallery();
+                    let bgExpand = new Expand();
                     loadBaseMapGallery(basemapGallery, bgExpand, view);
                 }
             })

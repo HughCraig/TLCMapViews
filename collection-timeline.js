@@ -259,8 +259,8 @@
 
                 //Basemap gallery block
                 if (config.basemapGallery) {
-                    var basemapGallery = new BasemapGallery();
-                    var bgExpand = new Expand();
+                    let basemapGallery = new BasemapGallery();
+                    let bgExpand = new Expand();
                     loadBaseMapGallery(basemapGallery, bgExpand, view);
                 }
             })

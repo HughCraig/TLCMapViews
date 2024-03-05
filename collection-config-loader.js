@@ -38,11 +38,11 @@ function loadCollectionConfig(urltoload) {
             .then((data) => {
                 //global configurations
                 if (data.display) {
-                    var display = data.display;
+                    let display = data.display;
 
                     //Info block
                     if (display.hasOwnProperty("info")) {
-                        var info = display.info;
+                        let info = display.info;
 
                         // Hide/show
                         if (info.hasOwnProperty("display")) {
@@ -136,7 +136,7 @@ function loadCollectionConfig(urltoload) {
                     }
                 }
 
-                var loadPromises;
+                let loadPromises;
                 //Load individual dataset
                 if (
                     data.datasets !== undefined &&
@@ -148,6 +148,22 @@ function loadCollectionConfig(urltoload) {
                     loadPromises = data.datasets.map((dataset, index) => {
                         if (dataset.jsonURL) {
                             return loadConfig(dataset.jsonURL)
+                                .then((datasetConfig) => {
+                                    config.datasetsConfig.push({
+                                        id: index,
+                                        name: dataset.name,
+                                        layerContent:
+                                            createLayerInfoPanelElement(
+                                                dataset,
+                                                colorGen
+                                            ),
+                                        config: datasetConfig,
+                                    });
+                                })
+                                .catch((err) => console.error(err));
+                        } else if(dataset.features){
+                            //Geojson in dataset directly
+                            return loadConfig(null , dataset)
                                 .then((datasetConfig) => {
                                     config.datasetsConfig.push({
                                         id: index,
@@ -193,7 +209,7 @@ function loadCollectionConfig(urltoload) {
  *
  */
 function createLayerInfoPanelElement(layerData, colorGen) {
-    var color = colorGen.generate();
+    let color = colorGen.generate();
 
     const propElement = $("<div></div>").css({
         "padding-left": "13px",
