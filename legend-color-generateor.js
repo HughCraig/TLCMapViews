@@ -17,30 +17,19 @@ class LegendColorGenerator {
         } else {
             // Color blind safe colors. Ref: https://davidmathlogic.com/colorblind
             this.baseColors = [
-                '#E69F00', 
-                '#56B4E9', 
-                '#009E73', 
-                '#F0E442', 
-                '#0072B2', 
-                '#D55E00', 
-                '#CC79A7', 
-                '#999999', 
-                '#E41A1C', 
-                '#DED41F',
-                '#000000', 
-                '#6F6F6F', 
-                '#A65628', 
-                '#F781BF', 
-                '#8DD3C7', 
-                '#FFFFB3', 
-                '#B3DE69', 
-                '#FFED6F', 
+                '#E69F00',
+                '#56B4E9',
+                '#009E73',
+                '#F0E442',
+                '#0072B2',
+                '#D55E00',
+                '#CC79A7'
             ];
         }
         // The delta of last generated color.
         this.index = -1;
         // The variation unit to be used for color adjust.
-        this.variationUnit = 30;
+        this.variationUnit = 50;
     }
 
     /**
