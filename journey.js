@@ -1,6 +1,6 @@
 (function () {
-    var urlParams = new URLSearchParams(window.location.search);
-    var urltoload = urlParams.get("load");
+    const urlParams = new URLSearchParams(window.location.search);
+    const urltoload = urlParams.get("load");
 
     /**
      * filters features from a GeoJSON data object by their geometry type.
@@ -13,7 +13,7 @@
      * @return {object} A new GeoJSON data object including only features of the specified geometry type.
      */
     function filterDataByGeometryType(data, geometryType) {
-        var filteredFeatures = data.features.filter(
+        const filteredFeatures = data.features.filter(
             (feature) => feature.geometry.type === geometryType
         );
         return {
@@ -22,7 +22,7 @@
             features: filteredFeatures,
         };
     }
-
+    
     require([
         "esri/Map",
         "esri/layers/GeoJSONLayer",
@@ -46,14 +46,14 @@
     ) {
         loadConfig(urltoload)
             .then((config) => {
-                var map = new Map({
+                let map = new Map({
                     basemap: config.basemap,
                     ground: "world-elevation",
                     layers: [],
                 });
 
-                var pointData = filterDataByGeometryType(config.data, "Point");
-                var lineData = filterDataByGeometryType(
+                const pointData = filterDataByGeometryType(config.data, "Point");
+                const lineData = filterDataByGeometryType(
                     config.data,
                     "LineString"
                 );
@@ -76,39 +76,34 @@
                 });
                 map.layers.add(geojsonPointLayer);
 
-                var geojsonLineLayer = null;
-                var lineGeoJson = {
+                let geojsonLineLayer = null;
+                let lineGeoJson = {
                     type: "FeatureCollection",
                     features: [],
                 };
                 if (lineData.features.length > 0) {
-                    let promises = lineData.features.map((feature) => {
-                        var polyline = new Polyline({
-                            paths: feature.geometry.coordinates,
+                    const promises = lineData.features.map(async (feature) => {
+                        const modifiedJourneyLines = await modifyJourneyLines(
+                            feature.geometry.coordinates,
+                            Polyline,
+                            geodesicUtils,
+                            normalizeUtils
+                        );
+
+                        modifiedJourneyLines.forEach((coordinates) => {
+                            const lineFeature = {
+                                type: "Feature",
+                                geometry: {
+                                    type: "LineString",
+                                    coordinates: coordinates,
+                                },
+                                display: feature.display,
+                                properties: feature.properties,
+                            };
+                            lineGeoJson.features.push(lineFeature);
                         });
 
-                        let densifiedPolyline = geodesicUtils.geodesicDensify(
-                            polyline,
-                            1000000
-                        );
-                        return normalizeUtils
-                            .normalizeCentralMeridian(densifiedPolyline)
-                            .then(([normalizedGeometry]) => {
-                                normalizedGeometry.paths.forEach(
-                                    (coordinates) => {
-                                        let lineFeature = {
-                                            type: "Feature",
-                                            geometry: {
-                                                type: "LineString",
-                                                coordinates: coordinates,
-                                            },
-                                            display: feature.display,
-                                            properties: feature.properties,
-                                        };
-                                        lineGeoJson.features.push(lineFeature);
-                                    }
-                                );
-                            });
+                        return Promise.resolve();
                     });
 
                     Promise.all(promises).then(() => {
@@ -150,7 +145,7 @@
                     });
                 }
 
-                var view = new SceneView({
+                let view = new SceneView({
                     container: "viewDiv",
                     center: [131.034742, -25.345113],
                     zoom: 3,
@@ -164,7 +159,6 @@
                         view.goTo(results.extent);
                     }, 800);
                 });
-                
                 //Info block
                 if (config.infoDisplay != "disabled") {
                     const infoDivExpand = new Expand();
@@ -173,8 +167,8 @@
 
                 //Basemap gallery block
                 if (config.basemapGallery) {
-                    var basemapGallery = new BasemapGallery();
-                    var bgExpand = new Expand();
+                    let basemapGallery = new BasemapGallery();
+                    let bgExpand = new Expand();
                     loadBaseMapGallery(basemapGallery, bgExpand, view);
                 }
             })

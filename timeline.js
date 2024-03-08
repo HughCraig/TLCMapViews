@@ -1,6 +1,6 @@
 (function () {
-  var urlParams = new URLSearchParams(window.location.search);
-  var urltoload = urlParams.get("load");
+  const urlParams = new URLSearchParams(window.location.search);
+  const urltoload = urlParams.get("load");
 
   require([
     "esri/Map",
@@ -100,10 +100,10 @@ ${normal.format(value[1].getTime())}`;
 
           // SET THE units for timeline pips to be appropriate to the scale of time.
           // get the difference between two dates and convert to seconds.
-          var fulltimespan = Math.abs(
+          let fulltimespan = Math.abs(
             start.getTime() / 1000 - end.getTime() / 1000
           );
-          var tunit = "minutes";
+          let tunit = "minutes";
           tunit = fulltimespan > 864000 ? "days" : tunit; //  than 10 days
           tunit = fulltimespan > 31540000 ? "months" : tunit; //  than a year
           tunit = fulltimespan > 1577000000 ? "years" : tunit; //  than 50 years
@@ -140,8 +140,8 @@ ${normal.format(value[1].getTime())}`;
 
         //Basemap gallery block
         if (config.basemapGallery) {
-          var basemapGallery = new BasemapGallery();
-          var bgExpand = new Expand();
+          let basemapGallery = new BasemapGallery();
+          let bgExpand = new Expand();
           loadBaseMapGallery(basemapGallery, bgExpand, view);
         }
       })
