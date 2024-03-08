@@ -123,14 +123,15 @@
         colorSlider.histogramConfig.average = null;
 
         // render quartile data lines on the slider
-        const percentages = ["25%", "50%", "75%"];
-        colorSlider.histogramConfig.dataLines = fieldValue.map((value, i) => ({
-          value: value,
-          label: `${percentages[i]}, (${value})`,
-        }));
-
-        // add colorSlider into legendDiv
-        view.ui.add("legendDiv", "bottom-left");
+        if (fieldValue) {
+          const percentages = ["25%", "50%", "75%"];
+          colorSlider.histogramConfig.dataLines = fieldValue.map(
+            (value, i) => ({
+              value: value,
+              label: `${percentages[i]}, (${value})`,
+            })
+          );
+        }
 
         colorSlider.on(
           [
@@ -162,6 +163,85 @@
     layer.renderer = renderer;
   }
 
+  /**
+   * Creates a CIM line symbol based on the provided feature, color, and width.
+   *
+   * @param {object} feature - The feature object containing display properties.
+   * @param {number[]} color - The color array in the format [r, g, b, a].
+   * @param {number} width - The width of the line symbol.
+   * @return {object} - The CIM line symbol object.
+   */
+  function createLineSymbol(feature, color = [255, 255, 255, 255], width = 2) {
+    return {
+      type: "cim",
+      data: {
+        type: "CIMSymbolReference",
+        symbol: {
+          type: "CIMLineSymbol",
+          symbolLayers: [
+            {
+              type: "CIMSolidStroke",
+              enable: true,
+              width:
+                feature.display && feature.display.lineWidth
+                  ? feature.display.lineWidth.toString()
+                  : width.toString(),
+              color:
+                feature.display && feature.display.color
+                  ? feature.display.color
+                  : color,
+            },
+            {
+              type: "CIMVectorMarker",
+              enable: true,
+              size: 5,
+              markerPlacement: {
+                type: "CIMMarkerPlacementAlongLineSameSize",
+                endings: "WithMarkers",
+                placementTemplate: [16],
+                angleToLine: true,
+              },
+              frame: {
+                xmin: -3,
+                ymin: -3,
+                xmax: 3,
+                ymax: 3,
+              },
+              markerGraphics: [
+                {
+                  type: "CIMMarkerGraphic",
+                  geometry: {
+                    rings: [
+                      [
+                        [-8, -5.47],
+                        [-8, 5.6],
+                        [1.96, -0.03],
+                        [-8, -5.47],
+                      ],
+                    ],
+                  },
+                  symbol: {
+                    type: "CIMPolygonSymbol",
+                    symbolLayers: [
+                      {
+                        type: "CIMSolidFill",
+                        enable: true,
+                        color:
+                          feature.display && feature.display.color
+                            ? feature.display.color
+                            : color,
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      },
+    };
+  }
+
   require([
     "esri/Map",
     "esri/Color",
@@ -174,7 +254,6 @@
     "esri/smartMapping/statistics/histogram",
     "esri/core/reactiveUtils",
     "esri/smartMapping/symbology/color",
-    "esri/form/elements/inputs/SwitchInput",
   ], function (
     Map,
     Color,
@@ -186,8 +265,7 @@
     colorRendererCreator,
     histogram,
     reactiveUtils,
-    colorSchemes,
-    SwitchInput
+    colorSchemes
   ) {
     loadConfig(urltoload)
       .then((config) => {
@@ -199,7 +277,6 @@
 
         var pointData = filterDataByGeometryType(config.data, "Point");
         var lineData = filterDataByGeometryType(config.data, "LineString");
-
         const template = loadPopUpTemplate(config);
 
         // construct the line layer
@@ -224,80 +301,10 @@
               },
               uniqueValueInfos: lineData.features.map((feature) => ({
                 value: feature.properties.tlcMapUniqueId,
-                symbol: {
-                  type: "cim",
-                  data: {
-                    type: "CIMSymbolReference",
-                    symbol: {
-                      type: "CIMLineSymbol",
-                      symbolLayers: [
-                        {
-                          type: "CIMSolidStroke",
-                          enable: true,
-                          width:
-                            feature.display && feature.display.lineWidth
-                              ? feature.display.lineWidth.toString()
-                              : 2,
-                          color:
-                            feature.display && feature.display.color
-                              ? feature.display.color
-                              : [255, 255, 255, 255],
-                        },
-                        {
-                          // arrow symbol
-                          type: "CIMVectorMarker",
-                          enable: true,
-                          size: 5,
-                          markerPlacement: {
-                            type: "CIMMarkerPlacementAlongLineSameSize", // places same size markers along the line
-                            endings: "WithMarkers",
-                            placementTemplate: [16], // determines space between each arrow
-                            angleToLine: true, // symbol will maintain its angle to the line when map is rotated
-                          },
-                          frame: {
-                            xmin: -3,
-                            ymin: -3,
-                            xmax: 3,
-                            ymax: 3,
-                          },
-                          markerGraphics: [
-                            {
-                              type: "CIMMarkerGraphic",
-                              geometry: {
-                                rings: [
-                                  [
-                                    [-8, -5.47],
-                                    [-8, 5.6],
-                                    [1.96, -0.03],
-                                    [-8, -5.47],
-                                  ],
-                                ],
-                              },
-                              symbol: {
-                                // black fill for the arrow symbol
-                                type: "CIMPolygonSymbol",
-                                symbolLayers: [
-                                  {
-                                    type: "CIMSolidFill",
-                                    enable: true,
-                                    color:
-                                      feature.display && feature.display.color
-                                        ? feature.display.color
-                                        : [255, 255, 255, 255],
-                                  },
-                                ],
-                              },
-                            },
-                          ],
-                        },
-                      ],
-                    },
-                  },
-                },
+                symbol: createLineSymbol(feature),
               })),
             },
           });
-
           map.layers.add(geojsonLineLayer);
         }
 
@@ -340,9 +347,9 @@
         // Fetch quantiles if quantity exists
         const log_quantiles = config.data.metadata.log_quantiles;
         const quantiles = config.data.metadata.quantiles;
-        var legendDiv = document.getElementById("legendDiv");
+        const hasQuantity = config.data.metadata.has_quantity;
 
-        if (log_quantiles !== null && log_quantiles !== undefined) {
+        if (hasQuantity) {
           legendDiv.style.display = "block"; // Show legendDiv
           reactiveUtils
             .whenOnce(() => !view.updating)
@@ -361,8 +368,8 @@
             });
         }
 
-        //Not sure why but timeout is needed to avoid the 'AbortError' Promise error.
-        //This problem could happens on the original code as well(30% change) which prevent the initial zoom/center setting
+        // Not sure why but timeout is needed to avoid the 'AbortError' Promise error.
+        // This problem could happens on the original code as well(30% change) which prevent the initial zoom/center setting
         geojsonPointLayer.queryExtent().then(function (results) {
           setTimeout(function () {
             view.goTo({
