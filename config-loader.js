@@ -28,6 +28,7 @@ function loadConfig(urltoload , data = null) {
         color: "orange", //Default color orange
         clusterColor: null,
         clusterFontColor:'#004a5d', //Default color dark blue
+        clusterPopupTitle: 'Cluster summary',
         popupEnabled: true, //Enable pop up by default
         popupTitle: null,
         popupContent: null,
@@ -143,6 +144,10 @@ function loadConfig(urltoload , data = null) {
             //Cluster color
             if (display.hasOwnProperty("clusterColor")) {
                 config["clusterColor"] = display.clusterColor;
+            }
+
+            if (display.hasOwnProperty("clusterPopupTitle")) {
+                config["clusterPopupTitle"] = display.clusterPopupTitle;
             }
 
             //Cluster font color
