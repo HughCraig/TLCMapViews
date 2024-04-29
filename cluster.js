@@ -23,7 +23,7 @@
                         if (geojson.location) {
                             view.goTo({
                                 center: JSON.parse(geojson.location),
-                                zoom: 5,
+                                zoom: 12,
                             });
                         }
                     } else if (geojson.type == "url") {
