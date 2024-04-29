@@ -22,7 +22,7 @@
                     } else if (geojson.type == "zoom") {
                         if (geojson.location) {
                             view.goTo({
-                                center: JSON.parse(geojson.location),
+                                center: geojson.location,
                                 zoom: 12,
                             });
                         }
