@@ -10,19 +10,34 @@
     } else {
         window.addEventListener(
             "message",
-            function (event) {
+            async function (event) {
                 const geojson = event.data;
-                if (geojson && geojson.type === "FeatureCollection") {
-                    loadGeoJson(geojson);
-                    if(view){
-                        view.popup.close();
+
+                if (geojson) {
+                    if (geojson.type == "FeatureCollection") {
+                        loadGeoJson(geojson);
+                        if (view) {
+                            view.popup.close();
+                        }
+                    } else if (geojson.type == "zoom") {
+                        if (geojson.location) {
+                            view.goTo({
+                                center: JSON.parse(geojson.location),
+                                zoom: 5,
+                            });
+                        }
+                    } else if (geojson.type == "url") {
+                        if(geojson.url){
+                            const geojsonData = await loadFromUrl(geojson.url);
+                            loadGeoJson(geojsonData);
+                        }
                     }
                 }
             },
             false
         );
     }
-  
+
     function loadGeoJson(geojsonData) {
         require([
             "esri/Map",
@@ -160,7 +175,7 @@
                                     details: attributes,
                                 },
                                 "*"
-                            );                           
+                            );
                         }
                     });
                 });
@@ -168,7 +183,7 @@
 
             geojsonLayer.queryExtent().then(function (results) {
                 // go to the extent of the results satisfying the query
-                if(config.viewExtentExpand){
+                if (config.viewExtentExpand) {
                     results.extent.expand(config.viewExtentExpand);
                 }
                 view.goTo(results.extent);
