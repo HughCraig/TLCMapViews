@@ -54,7 +54,7 @@
                 // {cluster_count} is an aggregate field containing
                 // the number of features comprised by the cluster
                 popupTemplate: {
-                    title: "Cluster summary",
+                    title: config.clusterPopupTitle,
                     content:
                         "{cluster_count} places in this cluster. Zoom in or click Browse Features.",
                     fieldInfos: [
