@@ -77,41 +77,73 @@
             });
             map.layers.add(geojsonPointLayer);
 
+            let geojsonLineLayer = null;
+            let lineGeoJson = {
+                type: "FeatureCollection",
+                features: [],
+            };
             if (lineData.features.length > 0) {
-                const blob = new Blob([JSON.stringify(lineData)], {
-                    type: "application/json",
-                });
-                const lineDataUrl = URL.createObjectURL(blob);
+                const promises = lineData.features.map(async (feature) => {
+                    const modifiedJourneyLines = await modifyJourneyLines(
+                        feature.geometry.coordinates,
+                        Polyline,
+                        geodesicUtils,
+                        normalizeUtils
+                    );
 
-                var geojsonLineLayer = new GeoJSONLayer({
-                    url: lineDataUrl,
-                    copyright:
-                        "Check copyright and permissions of this dataset at http://tlcmap.org/ghap.",
-                    popupTemplate: template,
-                    renderer: {
-                        type: "unique-value",
-                        field: "tlcMapUniqueId", // The name of the attribute field containing types or categorical values referenced in uniqueValueInfos or uniqueValueGroups
-                        uniqueValueInfos: config.data.features.map(
-                            (feature) => ({
-                                value: feature.properties.tlcMapUniqueId,
-                                symbol: {
-                                    type: "simple-line",
-                                    color:
-                                        feature.display && feature.display.color
-                                            ? feature.display.color
-                                            : "white",
-                                    width:
-                                        feature.display &&
-                                        feature.display.lineWidth
-                                            ? feature.display.lineWidth.toString()
-                                            : "2",
-                                },
-                            })
-                        ),
-                    },
-                    outFields: ["*"],
+                    modifiedJourneyLines.forEach((coordinates) => {
+                        const lineFeature = {
+                            type: "Feature",
+                            geometry: {
+                                type: "LineString",
+                                coordinates: coordinates,
+                            },
+                            display: feature.display,
+                            properties: feature.properties,
+                        };
+                        lineGeoJson.features.push(lineFeature);
+                    });
+
+                    return Promise.resolve();
                 });
-                map.layers.add(geojsonLineLayer);
+
+                Promise.all(promises).then(() => {
+                    const blob = new Blob([JSON.stringify(lineGeoJson)], {
+                        type: "application/json",
+                    });
+                    const lineDataUrl = URL.createObjectURL(blob);
+
+                    geojsonLineLayer = new GeoJSONLayer({
+                        url: lineDataUrl,
+                        copyright:
+                            "Check copyright and permissions of this dataset at http://tlcmap.org/ghap.",
+                        popupTemplate: template,
+                        renderer: {
+                            type: "unique-value",
+                            field: "tlcMapUniqueId", // The name of the attribute field containing types or categorical values referenced in uniqueValueInfos or uniqueValueGroups
+                            uniqueValueInfos: config.data.features.map(
+                                (feature) => ({
+                                    value: feature.properties
+                                        .tlcMapUniqueId,
+                                    symbol: {
+                                        type: "simple-line",
+                                        color:
+                                            feature.display &&
+                                            feature.display.color
+                                                ? feature.display.color
+                                                : "white",
+                                        width:
+                                            feature.display &&
+                                            feature.display.lineWidth
+                                                ? feature.display.lineWidth.toString()
+                                                : "2",
+                                    },
+                                })
+                            ),
+                        },
+                    });
+                    map.layers.add(geojsonLineLayer);
+                });
             }
 
             var view = new SceneView({
