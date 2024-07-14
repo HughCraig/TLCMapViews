@@ -45,9 +45,21 @@
             "esri/Map",
             "esri/layers/GeoJSONLayer",
             "esri/views/SceneView",
+            "esri/geometry/Extent",
             "esri/widgets/Expand",
             "esri/widgets/BasemapGallery",
-        ], function (Map, GeoJSONLayer, SceneView, Expand, BasemapGallery) {
+            "esri/geometry/Polyline",
+            "esri/geometry/support/geodesicUtils",
+            "esri/geometry/support/normalizeUtils",
+        ], function (Map,
+            GeoJSONLayer,
+            SceneView,
+            Extent,
+            Expand,
+            BasemapGallery,
+            Polyline,
+            geodesicUtils,
+            normalizeUtils) {
             const config = loadConfig(geojsonData);
             var map = new Map({
                 basemap: config.basemap,
