@@ -35,6 +35,10 @@ function loadConfig(urltoload , data = null) {
         popupBlockedFields: defaultBlockedFields,
         popupFieldLabels: null,
         popupLinks: null,
+        textContent: null,
+        textcontexts: null,
+        datasetID: null,
+        textID: null,
     };
 
     if (data) {
@@ -208,6 +212,22 @@ function loadConfig(urltoload , data = null) {
                     config["popupLinks"] = display.popup.links;
                 }
             }
+        }
+
+        if (data.hasOwnProperty("textcontent")) {
+            config["textContent"] = data.textcontent;
+        }
+
+        if (data.hasOwnProperty("textcontexts")) {
+            config["textcontexts"] = data.textcontexts;
+        }
+
+        if (data.hasOwnProperty("dataset_id")) {
+            config["datasetID"] = data.dataset_id;
+        }
+
+        if (data.hasOwnProperty("textID")) {
+            config["textID"] = data.textID;
         }
 
         //Pop up template for indivisual feature configurations
