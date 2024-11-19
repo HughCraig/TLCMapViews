@@ -386,7 +386,7 @@
                             deleteFeatureUIDs.forEach((uid) => {
                                 $.ajax({
                                     type: "GET",
-                                    url: "http://127.0.0.1:8000/ajaxdeletedataitem2",
+                                    url: "https://test-ghap.tlcmap.org//ajaxdeletedataitem2",
                                     data: {
                                         uid: uid,
                                     },
@@ -468,7 +468,7 @@
                                 //Add place first
                                 $.ajax({
                                     type: "GET",
-                                    url: "http://127.0.0.1:8000/ajaxadddataitem2",
+                                    url: "https://test-ghap.tlcmap.org//ajaxadddataitem2",
                                     data: {
                                         ds_id: newPlace.dataset_id,
                                         title: newPlace.title,
@@ -480,7 +480,7 @@
                                     success: function (result) {
                                         $.ajax({
                                             type: "GET",
-                                            url: "http://127.0.0.1:8000/ajaxaddtextcontent2",
+                                            url: "https://test-ghap.tlcmap.org//ajaxaddtextcontent2",
                                             data: {
                                                 dataitem_uid:
                                                     result.dataitem.uid,
@@ -580,7 +580,7 @@
                                 editedFeatureUIDs.forEach((uid) => {
                                     $.ajax({
                                         type: "GET",
-                                        url: "http://127.0.0.1:8000/ajaxedittextplacecoordinates",
+                                        url: "https://test-ghap.tlcmap.org//ajaxedittextplacecoordinates",
                                         data: {
                                             uid: uid,
                                             latitude: latitude,
