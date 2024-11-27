@@ -13,6 +13,7 @@
     let featureMap = new Map();
 
     let isAddNewPlace = false;
+    let selectedRange = null;
     let newPlace = {};
 
     //todo make sure to clear graphics layer when needed
@@ -107,6 +108,7 @@
         currentSelectedPlaceUID = null;
         graphicsLayer.removeAll();
         isAddNewPlace = false;
+        selectedRange = null;
         newPlace = {};
     }
 
@@ -133,6 +135,7 @@
                 currentSelectedPlaceLongitude = currentFeature.longitude;
 
                 isAddNewPlace = false;
+                selectedRange = null;
                 newPlace = {};
 
                 //Hide all other points , only show the selected pin
@@ -548,9 +551,6 @@
 
                                             success: function () {
                                                 // Wrap selected text with <span> in the DOM
-                                                const range = window
-                                                    .getSelection()
-                                                    .getRangeAt(0);
                                                 const span =
                                                     document.createElement(
                                                         "span"
@@ -564,11 +564,10 @@
                                                     result.dataitem.uid
                                                 );
 
-                                                console.log(newPlace);
                                                 span.innerText = newPlace.title;
 
-                                                range.deleteContents();
-                                                range.insertNode(span);
+                                                selectedRange.deleteContents();
+                                                selectedRange.insertNode(span);
                                                 window
                                                     .getSelection()
                                                     .removeAllRanges();
@@ -775,7 +774,7 @@
                             const selectedText = selection.toString();
 
                             if (selectedText.length > 0) {
-                                const range = selection.getRangeAt(0); // Get the range of the selection
+                                let range = selection.getRangeAt(0); // Get the range of the selection
 
                                 //Check if the selection include existing place
                                 const spansInRange = Array.from(
@@ -860,6 +859,7 @@
                                 );
 
                                 isAddNewPlace = true;
+                                selectedRange = range;
                                 newPlace = {
                                     title: selectedText,
                                     start_index: startIndex,
