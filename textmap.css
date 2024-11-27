@@ -7,44 +7,69 @@
     margin-bottom: 10px;
 }
 
-/* CSS for the blinking highlight using outline */
-@keyframes blinkRed {
-    0%,
-    100% {
-        outline: 2px solid transparent;
-    }
-    50% {
-        outline: 2px solid red;
-    }
+#textcontent {
+    white-space: pre-line;
+    height: 100%;
 }
 
-.blink {
-    animation: blinkRed 0.5s ease-in-out 3; /* Adjust duration and repeat count */
+#map {
+    width: 60%;
+    height: 100%;
 }
 
 #editPopup {
     display: none;
-    position: absolute;
-    width: 90%;
+    position: fixed;
+    left: 1%;
+    width: 37%;
     padding: 15px;
     background-color: white;
     background-clip: padding-box;
-    border: 1px solid rgba(0, 0, 0, .2);
+    border: 1px solid rgba(0, 0, 0, 0.2);
     border-radius: 6px;
-    -webkit-box-shadow: 0 3px 9px rgba(0, 0, 0, .5);
-    box-shadow: 0 3px 9px rgba(0, 0, 0, .5);
+    -webkit-box-shadow: 0 3px 9px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 3px 9px rgba(0, 0, 0, 0.5);
     outline: 0;
+    z-index: 200;
 }
 
-#editPopup::before {
+#editPopup::before,
+#editPopup::after {
     content: "";
     position: absolute;
-    top: -10px;
-    left: var(--arrow-left, 50%); /* Default to center if not set */
+    left: var(--arrow-left, 50%);
     transform: translateX(-50%);
     border-width: 10px;
     border-style: solid;
-    border-color: transparent transparent black transparent;
+}
+
+/* Arrow pointing up (above the popup) */
+#editPopup::before {
+    bottom: -10px; /* Arrow is positioned below the popup */
+    border-color: black transparent transparent transparent; /* Points down */
+    display: none; /* Default to hidden unless explicitly enabled */
+}
+
+/* Arrow pointing down (below the popup) */
+#editPopup::after {
+    top: -10px; /* Arrow is positioned above the popup */
+    border-color: transparent transparent black transparent; /* Points up */
+}
+
+#editPopup.arrow-up::before {
+    display: block;
+}
+
+#editPopup.arrow-up::after {
+    display: none;
+}
+
+#editPopup.arrow-down::before {
+    display: none;
+}
+
+#editPopup.arrow-down::after {
+    display: block;
 }
 
 button {
@@ -52,9 +77,9 @@ button {
 }
 
 #switchviewmode {
-    position: absolute;
+    position: fixed;
     bottom: 3%;
-    left: 3%;
+    left: 1%;
 }
 
 #text {

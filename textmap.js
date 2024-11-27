@@ -31,6 +31,35 @@
             currentSelectedPlaceUID = null;
         });
 
+    //Change background of the span, scroll to it
+    function highlightPlaceInText(id) {
+        restoreAllSpanColors();
+        const textContent = document.getElementById("textcontent");
+        const spanToHighlight = textContent.querySelector(
+            `span[data-uid="${id}"]`
+        );
+
+        if (spanToHighlight) {
+            // Change the background color
+            spanToHighlight.style.backgroundColor = "#286090";
+
+            // Scroll into view if needed
+            spanToHighlight.scrollIntoView({
+                behavior: "smooth",
+                block: "center",
+            });
+        }
+    }
+
+    function restoreAllSpanColors() {
+        const textContent = document.getElementById("textcontent");
+        const allSpans = textContent.querySelectorAll("span[data-uid]");
+
+        allSpans.forEach((span) => {
+            span.style.backgroundColor = "orange";
+        });
+    }
+
     function refreshGeoJSONLayer(GeoJSONLayer, view, clusterConfig) {
         loadConfig(urltoload).then((config) => {
             const blob = new Blob([JSON.stringify(config.data)], {
@@ -48,6 +77,7 @@
                 popupTemplate: loadPopUpTemplate(config),
                 renderer: loadRenderer(config),
                 popupEnabled: config.popupEnabled,
+                outFields: ["*"],
             });
 
             // Add the refreshed layer back to the map
@@ -67,6 +97,8 @@
             .forEach(function (element) {
                 element.remove();
             });
+
+        restoreAllSpanColors();
     }
 
     function closeEditPopup() {
@@ -74,106 +106,126 @@
         geojsonLayer.definitionExpression = null;
         currentSelectedPlaceUID = null;
         graphicsLayer.removeAll();
-    }
-
-    function refreshGeoJSONLayer(GeoJSONLayer, view, clusterConfig) {
-        loadConfig(urltoload).then((config) => {
-            const blob = new Blob([JSON.stringify(config.data)], {
-                type: "application/json",
-            });
-            const newurl = URL.createObjectURL(blob);
-
-            // Remove the existing layer from the map
-            view.map.remove(geojsonLayer);
-
-            geojsonLayer = new GeoJSONLayer({
-                url: newurl,
-                spatialReference: { wkid: 4326 },
-                copyright:
-                    "Check copyright and permissions of this dataset at http://tlcmap.org/ghap.",
-                featureReduction: clusterConfig,
-                popupTemplate: loadPopUpTemplate(config),
-                renderer: loadRenderer(config),
-                popupEnabled: config.popupEnabled,
-            });
-
-            // Add the refreshed layer back to the map
-            view.map.add(geojsonLayer);
-        });
+        isAddNewPlace = false;
+        newPlace = {};
     }
 
     function attachSpanClickEvents(view, span) {
         span.addEventListener("click", function () {
+            restoreAllSpanColors();
             const targetId = span.getAttribute("data-uid");
             currentSelectedPlaceUID = targetId;
 
             if (currentViewMode === "edit") {
                 removePopupElements();
-                // Show the editPopup div
-                const editPopup = document.getElementById("editPopup");
-                editPopup.style.display = "block";
-                document.getElementById("changeAllPlace").style.display =
-                    "block";
 
                 const spanRect = span.getBoundingClientRect();
-                const popupY = spanRect.bottom + window.scrollY + 10;
-                const popupRect = editPopup.getBoundingClientRect();
-
-                editPopup.style.top = `${popupY}px`;
-
-                const arrowOffset =
-                    spanRect.left + spanRect.width / 2 - popupRect.left;
-
-                // Set the arrow's left position dynamically
-                editPopup.style.setProperty("--arrow-left", `${arrowOffset}px`);
-
-                // Clear or prefill inputs if needed
                 let currentFeature = featureMap.get(targetId);
-                document.getElementById("latitudeInput").value =
-                    currentFeature.latitude;
-                currentSelectedPlaceLatitude = currentFeature.latitude;
-                document.getElementById("longitudeInput").value =
-                    currentFeature.longitude;
-                currentSelectedPlaceLongitude = currentFeature.longitude;
 
-                document.getElementById("applyAllCheckboxText").innerText =
-                    "Apply to all linked '" +
-                    currentFeature.name +
-                    "' places in this Text";
-                document.getElementById("applyAllCheckbox").checked = false;
+                showEditPlacePopup(
+                    spanRect,
+                    currentFeature.latitude,
+                    currentFeature.longitude,
+                    currentFeature.name
+                );
+
+                currentSelectedPlaceLatitude = currentFeature.latitude;
+                currentSelectedPlaceLongitude = currentFeature.longitude;
 
                 isAddNewPlace = false;
                 newPlace = {};
 
-                //Hide all other points , only show the selected poin
+                //Hide all other points , only show the selected pin
                 geojsonLayer.definitionExpression = `id = '${targetId}'`;
             }
 
             //Mufeng not showing popup after change
-            geojsonLayer
-                .queryFeatures({
-                    where: `id = '${targetId}'`,
-                    returnGeometry: true,
-                    outFields: ["*"],
-                })
-                .then(function (result) {
-                    if (result.features.length > 0) {
-                        const feature = result.features[0];
-                        view.goTo({
-                            target: feature.geometry,
-                            zoom: 3,
-                        }).then(() => {
-                            if (currentViewMode === "view") {
-                                view.popup.open({
-                                    location: feature.geometry,
-                                    features: [feature],
-                                    title: feature.attributes.name,
-                                });
-                            }
-                        });
-                    }
-                });
+            mapShowPopup(view ,targetId);
         });
+    }
+
+    function mapShowPopup(view , targetId) {
+        geojsonLayer
+            .queryFeatures({
+                where: `id = '${targetId}'`,
+                returnGeometry: true,
+                outFields: ["*"],
+            })
+            .then(function (result) {
+                if (result.features.length > 0) {
+                    const feature = result.features[0];
+                    view.goTo({
+                        target: feature.geometry,
+                        zoom: 3,
+                    }).then(() => {
+                        if (currentViewMode === "view") {
+                            view.popup.open({
+                                location: feature.geometry,
+                                features: [feature],
+                                title: feature.attributes.name,
+                            });
+                        }
+                    });
+                }
+            });
+    }
+
+    //Show edit popup
+    function showEditPlacePopup(
+        rangeRect,
+        latitudeInput,
+        longitudeInput,
+        placeName
+    ) {
+        const editPopup = document.getElementById("editPopup");
+        editPopup.style.display = "block";
+
+        const popupRect = editPopup.getBoundingClientRect();
+
+        // Calculate space above and below the span
+        const spaceBelow = window.innerHeight - rangeRect.bottom;
+        const spaceAbove = rangeRect.top;
+
+        // Decide whether to place the popup above or below
+        if (spaceBelow < popupRect.height && spaceAbove > popupRect.height) {
+            // Place popup above the span
+            const popupY =
+                rangeRect.top + window.scrollY - popupRect.height - 10;
+            editPopup.style.top = `${popupY}px`;
+
+            const arrowOffset =
+                rangeRect.left + rangeRect.width / 2 - popupRect.left;
+
+            // Set the arrow's left position dynamically
+            editPopup.style.setProperty("--arrow-left", `${arrowOffset}px`);
+            editPopup.classList.add("arrow-up");
+            editPopup.classList.remove("arrow-down");
+        } else {
+            // Place popup below the span
+            const popupY = rangeRect.bottom + window.scrollY + 10;
+            editPopup.style.top = `${popupY}px`;
+
+            const arrowOffset =
+                rangeRect.left + rangeRect.width / 2 - popupRect.left;
+
+            editPopup.style.setProperty("--arrow-left", `${arrowOffset}px`);
+            editPopup.classList.add("arrow-down");
+            editPopup.classList.remove("arrow-up");
+        }
+
+        document.getElementById("latitudeInput").style.backgroundColor =
+            "white";
+        document.getElementById("longitudeInput").style.backgroundColor =
+            "white";
+        document.getElementById("changeAllPlace").style.display = "block";
+
+        document.getElementById("latitudeInput").value = latitudeInput;
+        document.getElementById("longitudeInput").value = longitudeInput;
+
+        document.getElementById("applyAllCheckboxText").innerText =
+            "Apply to all linked '" + placeName + "' places in this Text";
+
+        document.getElementById("applyAllCheckbox").checked = false;
     }
 
     require([
@@ -299,6 +351,7 @@
                     popupTemplate: loadPopUpTemplate(config),
                     renderer: loadRenderer(config),
                     popupEnabled: config.popupEnabled,
+                    outFields: ["*"],
                 });
 
                 graphicsLayer = new GraphicsLayer({
@@ -327,6 +380,8 @@
                 document
                     .getElementById("switchviewmode")
                     .addEventListener("click", () => {
+                        restoreAllSpanColors();
+
                         const switchButton =
                             document.getElementById("switchviewmode");
                         removePopupElements();
@@ -386,7 +441,7 @@
                             deleteFeatureUIDs.forEach((uid) => {
                                 $.ajax({
                                     type: "GET",
-                                    url: "https://test-ghap.tlcmap.org//ajaxdeletedataitem2",
+                                    url: "https://test-ghap.tlcmap.org/ajaxdeletedataitem2",
                                     data: {
                                         uid: uid,
                                     },
@@ -468,7 +523,7 @@
                                 //Add place first
                                 $.ajax({
                                     type: "GET",
-                                    url: "https://test-ghap.tlcmap.org//ajaxadddataitem2",
+                                    url: "https://test-ghap.tlcmap.org/ajaxadddataitem2",
                                     data: {
                                         ds_id: newPlace.dataset_id,
                                         title: newPlace.title,
@@ -478,9 +533,10 @@
                                     },
 
                                     success: function (result) {
+                                        //New add text context
                                         $.ajax({
                                             type: "GET",
-                                            url: "https://test-ghap.tlcmap.org//ajaxaddtextcontent2",
+                                            url: "https://test-ghap.tlcmap.org/ajaxaddtextcontent2",
                                             data: {
                                                 dataitem_uid:
                                                     result.dataitem.uid,
@@ -491,15 +547,6 @@
                                             },
 
                                             success: function () {
-                                                closeEditPopup();
-
-                                                refreshGeoJSONLayer(
-                                                    GeoJSONLayer,
-                                                    view,
-                                                    clusterConfig
-                                                );
-                                                removePopupElements();
-
                                                 // Wrap selected text with <span> in the DOM
                                                 const range = window
                                                     .getSelection()
@@ -516,8 +563,9 @@
                                                     "data-uid",
                                                     result.dataitem.uid
                                                 );
-                                                span.textContent =
-                                                    newPlace.title;
+
+                                                console.log(newPlace);
+                                                span.innerText = newPlace.title;
 
                                                 range.deleteContents();
                                                 range.insertNode(span);
@@ -540,6 +588,14 @@
                                                         longitude: longitude,
                                                     }
                                                 );
+
+                                                closeEditPopup();
+                                                refreshGeoJSONLayer(
+                                                    GeoJSONLayer,
+                                                    view,
+                                                    clusterConfig
+                                                );
+                                                removePopupElements();
                                             },
                                             error: function (response) {
                                                 alert(
@@ -580,7 +636,7 @@
                                 editedFeatureUIDs.forEach((uid) => {
                                     $.ajax({
                                         type: "GET",
-                                        url: "https://test-ghap.tlcmap.org//ajaxedittextplacecoordinates",
+                                        url: "https://test-ghap.tlcmap.org/ajaxedittextplacecoordinates",
                                         data: {
                                             uid: uid,
                                             latitude: latitude,
@@ -622,11 +678,20 @@
                             currentViewMode == "edit" &&
                             currentSelectedPlaceUID != null
                         ) {
-                            document.getElementById("latitudeInput").value = currentSelectedPlaceLatitude;
-                            document.getElementById("longitudeInput").value = currentSelectedPlaceLongitude;
+                            document.getElementById("latitudeInput").value =
+                                currentSelectedPlaceLatitude;
+                            document.getElementById("longitudeInput").value =
+                                currentSelectedPlaceLongitude;
+                            document.getElementById(
+                                "latitudeInput"
+                            ).style.backgroundColor = "white";
+                            document.getElementById(
+                                "longitudeInput"
+                            ).style.backgroundColor = "white";
                             graphicsLayer.removeAll();
                         }
                     });
+
                 // Click on map behavior
                 view.on("click", (event) => {
                     if (
@@ -644,21 +709,12 @@
                         document.getElementById("longitudeInput").value =
                             event.mapPoint.longitude.toFixed(6);
 
-                        // Function to add the blink class and remove it after animation completes
-                        function addBlinkEffect(element) {
-                            element.classList.add("blink");
-                            setTimeout(() => {
-                                element.classList.remove("blink");
-                            }, 1500); // Duration should match the CSS animation duration
-                        }
-
-                        // Apply the blink effect to both latitude and longitude inputs
-                        addBlinkEffect(
-                            document.getElementById("latitudeInput")
-                        );
-                        addBlinkEffect(
-                            document.getElementById("longitudeInput")
-                        );
+                        document.getElementById(
+                            "latitudeInput"
+                        ).style.backgroundColor = "lightyellow";
+                        document.getElementById(
+                            "longitudeInput"
+                        ).style.backgroundColor = "lightyellow";
 
                         // Remove the previous div if it exists
                         const pointGraphic = new Graphic({
@@ -676,11 +732,32 @@
 
                         // Add the point graphic to the graphics layer
                         graphicsLayer.add(pointGraphic);
+                    } else if (currentViewMode == "view") {
+                        //If click on pin
+                        view.hitTest(event).then(function (response) {
+                            if (response.results.length > 0) {
+                                // Loop through the results
+                                response.results.forEach(function (result) {
+                                    // Check if the result is from the geojsonLayer
+                                    if (
+                                        result.graphic &&
+                                        result.graphic.layer === geojsonLayer
+                                    ) {
+                                        // Get the feature attributes
+                                        const attributes =
+                                            result.graphic.attributes;
+
+                                        if (attributes.id) {
+                                            highlightPlaceInText(attributes.id);
+                                        }
+                                    }
+                                });
+                            }
+                        });
                     }
                 });
 
                 //Add place behaviour// Mufeng, after something need to rebind again.
-                //Adding place not getting right if multiple same name
                 document
                     .getElementById("textcontent")
                     .addEventListener("mouseup", () => {
@@ -697,11 +774,8 @@
                             const selection = window.getSelection();
                             const selectedText = selection.toString();
 
-                            // Check if text is selected
                             if (selectedText.length > 0) {
-                                // Check if selection includes an existing span (place)
-                                const range = selection.getRangeAt(0);
-                                const rangeRect = range.getBoundingClientRect();
+                                const range = selection.getRangeAt(0); // Get the range of the selection
 
                                 //Check if the selection include existing place
                                 const spansInRange = Array.from(
@@ -725,117 +799,71 @@
                                     return;
                                 }
 
-                                const originalHTML =
-                                    document.getElementById(
-                                        "textcontent"
-                                    ).innerHTML;
-                                const originalText = config.textContent;
-
-                                const countOccurrences = (text, searchText) => {
-                                    const regex = new RegExp(
-                                        `\\b${searchText}\\b`,
-                                        "g"
-                                    );
-                                    const matches = text.match(regex);
-                                    return matches ? matches.length : 0;
-                                };
-
-                                // Get occurrence count in innerHTML
-                                const occurrenceNumber = countOccurrences(
-                                    originalHTML,
-                                    selectedText
+                                // Get the text content before the selection
+                                let textBeforeSelection = "";
+                                const beforeRange = document.createRange();
+                                beforeRange.setStart(
+                                    document.getElementById("textcontent"),
+                                    0
                                 );
+                                beforeRange.setEnd(
+                                    range.startContainer,
+                                    range.startOffset
+                                );
+                                textBeforeSelection = beforeRange.toString();
 
-                                function findNthOccurrence(
-                                    text,
-                                    searchText,
-                                    n
-                                ) {
-                                    const regex = new RegExp(
-                                        `\\b${searchText}\\b`,
-                                        "g"
-                                    );
-                                    let match;
-                                    let occurrenceCount = 0;
+                                // Count occurrences of the selected text in the text before the selection
+                                const occurrencesBefore = (
+                                    textBeforeSelection.match(
+                                        new RegExp(selectedText, "g")
+                                    ) || []
+                                ).length;
 
-                                    // Iterate over regex matches to find the nth occurrence
-                                    while (
-                                        (match = regex.exec(text)) !== null
+                                // Locate the selected occurrence in config.textContent
+                                const textContent = config.textContent;
+                                let currentOccurrence = 0;
+                                let startIndex = -1;
+                                let endIndex = -1;
+
+                                for (let i = 0; i < textContent.length; i++) {
+                                    if (
+                                        textContent.substr(
+                                            i,
+                                            selectedText.length
+                                        ) === selectedText
                                     ) {
-                                        occurrenceCount++;
-                                        if (occurrenceCount === n) {
-                                            return match.index;
+                                        currentOccurrence++;
+                                        if (
+                                            currentOccurrence ===
+                                            occurrencesBefore + 1
+                                        ) {
+                                            startIndex = i;
+                                            endIndex = i + selectedText.length;
+                                            break;
                                         }
                                     }
-
-                                    // Return -1 if the nth occurrence is not found
-                                    return -1;
                                 }
 
-                                // Find the start index of the nth occurrence in config.textContent
-                                const start_index = findNthOccurrence(
-                                    originalText,
-                                    selectedText,
-                                    occurrenceNumber
-                                );
-
-                                if (start_index === -1) {
+                                if (startIndex == -1 || endIndex == -1) {
                                     alert(
-                                        "Your select should not include partial words."
+                                        "Could not find the exact occurrence in the original text content."
                                     );
                                     return;
                                 }
 
-                                const end_index =
-                                    start_index + selectedText.length; // End index is exclusive
-
-                                //Show edit popuip
-                                const editPopup =
-                                    document.getElementById("editPopup");
-                                editPopup.style.display = "block";
-                                document.getElementById(
-                                    "changeAllPlace"
-                                ).style.display = "none";
-
-                                const popupY =
-                                    rangeRect.bottom + window.scrollY + 10;
-                                const popupRect =
-                                    editPopup.getBoundingClientRect();
-
-                                editPopup.style.top = `${popupY}px`;
-
-                                const arrowOffset =
-                                    rangeRect.left +
-                                    rangeRect.width / 2 -
-                                    popupRect.left;
-
-                                // Set the arrow's left position dynamically
-                                editPopup.style.setProperty(
-                                    "--arrow-left",
-                                    `${arrowOffset}px`
+                                const rangeRect = range.getBoundingClientRect();
+                                showEditPlacePopup(
+                                    rangeRect,
+                                    null,
+                                    null,
+                                    selectedText
                                 );
-
-                                // Clear or prefill inputs if needed
-                                document.getElementById("latitudeInput").value =
-                                    null;
-                                document.getElementById(
-                                    "longitudeInput"
-                                ).value = null;
-                                document.getElementById(
-                                    "applyAllCheckboxText"
-                                ).innerText =
-                                    "Apply to all linked '" +
-                                    selectedText +
-                                    "' places in this Text";
-                                document.getElementById(
-                                    "applyAllCheckbox"
-                                ).checked = false;
 
                                 isAddNewPlace = true;
                                 newPlace = {
                                     title: selectedText,
-                                    start_index: start_index,
-                                    end_index: end_index,
+                                    start_index: startIndex,
+                                    end_index: endIndex,
                                     dataset_id: config.datasetID,
                                 };
                             }
@@ -899,6 +927,18 @@
                         }
                     });
 
+                // Remove highlight when popup is closed
+                document.addEventListener("click", function (event) {
+                    // Check if the clicked element has the specified class
+                    if (
+                        event.target.classList.contains("esri-popup__icon") &&
+                        event.target.classList.contains("esri-icon-close")
+                    ) {
+                        // Call the restoreAllSpanColors function
+                        restoreAllSpanColors();
+                    }
+                });
+
                 //Info block
                 if (config.infoDisplay != "disabled") {
                     const infoDivExpand = new Expand();
@@ -933,6 +973,18 @@
                     }
                 });
                 view.ui.add(switchMapType, "top-right");
+
+                //Event for "goto" parameter
+                const urlParams = new URLSearchParams(window.location.search);
+                const gotoId = urlParams.get("goto");
+
+                if (gotoId) {
+                    // Highlight the corresponding text span
+                    highlightPlaceInText(gotoId);
+
+                    // Show the popup on the map for the corresponding feature
+                    mapShowPopup(view , gotoId);
+                }
             })
             .catch((err) => console.error(err));
     });
