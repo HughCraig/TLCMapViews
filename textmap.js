@@ -325,9 +325,10 @@
                         markedText += textContent.slice(lastIndex, startIndex);
 
                         markedText +=
-                            '<span style="background-color: orange; padding:3px; cursor:pointer" data-uid="' +
-                            dataItemUid +
-                            '">' +
+                            '<span style="background-color: orange; padding:3px; cursor:pointer" ' +
+                            'data-uid="' + dataItemUid + '" ' +
+                            'data-related="' + context.linked_dataitem_uid + '" ' +
+                            'id="' + dataItemUid + '">' +
                             textContent.slice(startIndex, endIndex) +
                             "</span>";
 
@@ -444,7 +445,7 @@
                             deleteFeatureUIDs.forEach((uid) => {
                                 $.ajax({
                                     type: "GET",
-                                    url: "https://test-ghap.tlcmap.org/ajaxdeletedataitem2",
+                                    url: "http://127.0.0.1:8000/ajaxdeletedataitem2",
                                     data: {
                                         uid: uid,
                                     },
@@ -526,20 +527,26 @@
                                 //Add place first
                                 $.ajax({
                                     type: "GET",
-                                    url: "https://test-ghap.tlcmap.org/ajaxadddataitem2",
+                                    url: "http://127.0.0.1:8000/ajaxadddataitem2",
                                     data: {
                                         ds_id: newPlace.dataset_id,
                                         title: newPlace.title,
                                         recordtype: "Text",
                                         latitude: latitude,
                                         longitude: longitude,
+                                        description : "\"" + newPlace.sentence + "\"",
+                                        extendedData: JSON.stringify(
+                                            {
+                                                offset : newPlace.start_index,
+                                            }
+                                        ),
                                     },
 
                                     success: function (result) {
                                         //New add text context
                                         $.ajax({
                                             type: "GET",
-                                            url: "https://test-ghap.tlcmap.org/ajaxaddtextcontent2",
+                                            url: "http://127.0.0.1:8000/ajaxaddtextcontent2",
                                             data: {
                                                 dataitem_uid:
                                                     result.dataitem.uid,
@@ -548,8 +555,9 @@
                                                     newPlace.start_index,
                                                 end_index: newPlace.end_index,
                                             },
-
+                            
                                             success: function () {
+                                                
                                                 // Wrap selected text with <span> in the DOM
                                                 const span =
                                                     document.createElement(
@@ -559,9 +567,14 @@
                                                     "orange";
                                                 span.style.padding = "3px";
                                                 span.style.cursor = "pointer";
+                                                span.id = result.dataitem.uid;
                                                 span.setAttribute(
                                                     "data-uid",
                                                     result.dataitem.uid
+                                                );
+                                                span.setAttribute(
+                                                    "data-related",
+                                                    result.dataitem.linked_dataitem_uid
                                                 );
 
                                                 span.innerText = newPlace.title;
@@ -635,13 +648,13 @@
                                 editedFeatureUIDs.forEach((uid) => {
                                     $.ajax({
                                         type: "GET",
-                                        url: "https://test-ghap.tlcmap.org/ajaxedittextplacecoordinates",
+                                        url: "http://127.0.0.1:8000/ajaxedittextplacecoordinates",
                                         data: {
                                             uid: uid,
                                             latitude: latitude,
                                             longitude: longitude,
                                         },
-                                        success: function () {
+                                        success: function (result) {
                                             closeEditPopup();
 
                                             refreshGeoJSONLayer(
@@ -651,6 +664,19 @@
                                             );
 
                                             removePopupElements();
+
+                                            let updated_linked_dataitem_uid = result.linked_dataitem_uid;
+                                            //select span , update data-related
+                                            const spanToUpdate = document.querySelector(
+                                                `span[data-uid="${uid}"]`
+                                            );
+                                            if (spanToUpdate) {
+                                                console.log("spanToUpdate", updated_linked_dataitem_uid);
+                                                spanToUpdate.setAttribute(
+                                                    "data-related",
+                                                    updated_linked_dataitem_uid
+                                                );
+                                            }
 
                                             //Update new coordinates in the featureMap
                                             featureMap.get(uid).latitude =
@@ -731,28 +757,17 @@
 
                         // Add the point graphic to the graphics layer
                         graphicsLayer.add(pointGraphic);
-                    } else if (currentViewMode == "view") {
-                        //If click on pin
-                        view.hitTest(event).then(function (response) {
-                            if (response.results.length > 0) {
-                                // Loop through the results
-                                response.results.forEach(function (result) {
-                                    // Check if the result is from the geojsonLayer
-                                    if (
-                                        result.graphic &&
-                                        result.graphic.layer === geojsonLayer
-                                    ) {
-                                        // Get the feature attributes
-                                        const attributes =
-                                            result.graphic.attributes;
+                    }
+                });
 
-                                        if (attributes.id) {
-                                            highlightPlaceInText(attributes.id);
-                                        }
-                                    }
-                                });
+                view.popup.watch("selectedFeature", (selectedFeature) => {
+                    if (currentViewMode == "view"){
+                        if (selectedFeature && selectedFeature.attributes) {
+                            const attributes = selectedFeature.attributes;
+                            if (attributes.id) {
+                                highlightPlaceInText(attributes.id);
                             }
-                        });
+                        }
                     }
                 });
 
@@ -850,6 +865,20 @@
                                     return;
                                 }
 
+                                const sentenceRegex = /[^.!?]*[.!?]/g; // Regex to capture sentences
+                                let sentenceContainingSelection = "";
+                
+                                let match;
+                                while ((match = sentenceRegex.exec(textContent)) !== null) {
+                                    if (
+                                        match.index <= startIndex &&
+                                        startIndex < match.index + match[0].length
+                                    ) {
+                                        sentenceContainingSelection = match[0].trim();
+                                        break;
+                                    }
+                                }
+                
                                 const rangeRect = range.getBoundingClientRect();
                                 showEditPlacePopup(
                                     rangeRect,
@@ -865,6 +894,7 @@
                                     start_index: startIndex,
                                     end_index: endIndex,
                                     dataset_id: config.datasetID,
+                                    sentence : sentenceContainingSelection
                                 };
                             }
                         }

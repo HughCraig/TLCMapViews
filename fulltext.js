@@ -205,29 +205,16 @@
                     view.goTo(results.extent);
                 });
 
-                // Click on map behavior
-                view.on("click", (event) => {
-                    //If click on pin
-                    view.hitTest(event).then(function (response) {
-                        if (response.results.length > 0) {
-                            // Loop through the results
-                            response.results.forEach(function (result) {
-                                // Check if the result is from the geojsonLayer
-                                if (
-                                    result.graphic &&
-                                    result.graphic.layer === geojsonLayer
-                                ) {
-                                    // Get the feature attributes
-                                    const attributes =
-                                        result.graphic.attributes;
-
-                                    if (attributes.id) {
-                                        highlightPlaceInText(attributes.id);
-                                    }
-                                }
-                            });
+                // open pin feature popup
+                view.popup.watch("selectedFeature", (selectedFeature) => {
+                    if (currentViewMode == "view") {
+                        if (selectedFeature && selectedFeature.attributes) {
+                            const attributes = selectedFeature.attributes;
+                            if (attributes.id) {
+                                highlightPlaceInText(attributes.id);
+                            }
                         }
-                    });
+                    }
                 });
 
                 document
