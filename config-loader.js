@@ -577,8 +577,9 @@ function buildPopupContentTable(
     res += `
         <tr style="background-color: #FFD580; font-weight: bold;">
             <td colspan="2">
+                Know more about this or other places? 
                 <a href="https://tlcmap.org/login" target="_blank" style="font-weight: 900">
-                    Know more about this place or other places? Contribute to TLCMap.org here…
+                    Contribute…
                 </a>
             </td> 
         </tr>

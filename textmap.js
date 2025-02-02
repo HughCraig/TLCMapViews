@@ -411,6 +411,12 @@
                     });
 
                 document
+                    .getElementById("backtolayer")
+                    .addEventListener("click", () => {
+                        window.location.href = 'https://test-ghap.tlcmap.org/myprofile/mydatasets/' + config.datasetID;
+                    });
+
+                document
                     .querySelectorAll("span[data-uid]")
                     .forEach(function (span) {
                         attachSpanClickEvents(view, span);
