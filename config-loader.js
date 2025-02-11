@@ -36,6 +36,10 @@ function loadConfig(urltoload , data = null) {
         popupBlockedFields: defaultBlockedFields,
         popupFieldLabels: null,
         popupLinks: null,
+        textContent: null,
+        textcontexts: null,
+        datasetID: null,
+        textID: null,
     };
 
     if (data) {
@@ -215,6 +219,22 @@ function loadConfig(urltoload , data = null) {
             }
         }
 
+        if (data.hasOwnProperty("textcontent")) {
+            config["textContent"] = data.textcontent;
+        }
+
+        if (data.hasOwnProperty("textcontexts")) {
+            config["textcontexts"] = data.textcontexts;
+        }
+
+        if (data.hasOwnProperty("dataset_id")) {
+            config["datasetID"] = data.dataset_id;
+        }
+
+        if (data.hasOwnProperty("textID")) {
+            config["textID"] = data.textID;
+        }
+
         //Pop up template for indivisual feature configurations
         let popupTemplateMap = new Map();
         if (data.features) {
@@ -328,32 +348,6 @@ function loadConfig(urltoload , data = null) {
                         blockedFields
                     );
 
-                    //Links
-                    if (
-                        popUp.hasOwnProperty("links") &&
-                        Array.isArray(popUp.links)
-                    ) {
-                        let links = [];
-                        popUp.links.forEach((link) => {
-                            if (link.link && link.text) {
-                                let dummyElement =
-                                    document.createElement("div");
-                                dummyElement.innerText = link.text;
-                                let safeText = dummyElement.innerHTML;
-
-                                links.push(
-                                    `<a href="${link.link}" target="${
-                                        link.target
-                                            ? link.target
-                                            : "_blank"
-                                    }">${safeText}</a>`
-                                );
-                            }
-                        });
-                        content.customLink = `<div style="margin-top: 1rem;">${links.join(
-                            " | "
-                        )}</div>`;
-                    }
                 }
 
                 let finalContent = "";
@@ -584,6 +578,31 @@ function buildPopupContentTable(
 
     let res = "<div><table class='esri-widget__table'>";
 
+    // Add the extra highlighted row as the first row
+    res += `
+        <tr style="background-color: #FFD580; font-weight: bold;">
+            <td colspan="2">
+                Know more about this or other places? 
+                <a href="https://tlcmap.org/login" target="_blank" style="font-weight: 900">
+                    Contribute…
+                </a>
+            </td> 
+        </tr>
+    `;
+
+    if (feature.display && feature.display.source && feature.display.source.Layer) {
+        res += `
+            <tr>
+                <td>Layer</td>
+                <td>
+                    <a href="${feature.display.source.Layer.url}" target="_blank" style="color:#0000EE">
+                        ${feature.display.source.Layer.name}
+                    </a>
+                </td>
+            </tr>
+        `;
+    }
+
     for (let key in properties) {
         if (allowedFields && !allowedFields.has(key)) {
             continue;
@@ -615,6 +634,19 @@ function buildPopupContentTable(
 
         res += `<tr><th class="esri-feature-fields__field-header">${label}</th>
   <td class="esri-feature-fields__field-data">${value}</td></tr>`;
+    }
+
+    if (feature.display && feature.display.source && feature.display.source.TLCMapID) {
+        res += `
+            <tr>
+                <td>TLCMap ID</td>
+                <td>
+                    <a href="${feature.display.source.TLCMapID.url}" target="_blank" style="color:#0000EE">
+                        ${feature.display.source.TLCMapID.id}
+                    </a>
+                </td>
+            </tr>
+        `;
     }
 
     res += "</table></div>";
