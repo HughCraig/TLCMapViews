@@ -49,7 +49,7 @@
                     const feature = result.features[0];
                     view.goTo({
                         target: feature.geometry,
-                        zoom: 3,
+                        zoom: view.zoom,
                     }).then(() => {
                         if (currentViewMode === "view") {
                             view.popup.open({
@@ -167,6 +167,8 @@
                     markedText += textContent.slice(lastIndex);
                     document.getElementById("textcontent").innerHTML =
                         markedText;
+                }else if(config.textContent){
+                    document.getElementById("textcontent").innerHTML = config.textContent
                 }
 
                 // Pass the updated data with id for each feature to layer
