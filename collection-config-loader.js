@@ -1,3 +1,11 @@
+function showLoadingWheel() {
+    document.getElementById("loadingWheel-mapView").style.display = "block";
+}
+
+function hideLoadingWheel() {
+    document.getElementById("loadingWheel-mapView").style.display = "none";
+}
+
 /**
  * Silimiar to loadConfig() in config.loader.js but Load user configuration for collections map.
  * It provides default configurations for various elements and overrides them with values
@@ -185,10 +193,12 @@ function loadCollectionConfig(urltoload) {
                 // Wait for all datasets to load before resolving config.
                 Promise.all(loadPromises)
                     .then(() => {
+                        hideLoadingWheel();
                         resolve(config);
                     })
                     .catch((err) => {
                         console.error(err);
+                        hideLoadingWheel();
                         reject(err);
                     });
             })

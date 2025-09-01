@@ -1,3 +1,11 @@
+function showLoadingWheel() {
+    document.getElementById("loadingWheel-mapView").style.display = "block";
+}
+
+function hideLoadingWheel() {
+    document.getElementById("loadingWheel-mapView").style.display = "none";
+}
+
 /**
  * The loadConfig function fetches and processes a configuration Object from the geojson url or directly from a provided data..
  * It provides default configurations for various elements and overrides them with values
@@ -51,6 +59,7 @@ function loadConfig(urltoload , data = null) {
                     resolve(processGeoJsonData(data, config));
                 })
                 .catch((err) => {
+                    hideLoadingWheel()
                     console.error(err);
                     config.titleText = "Error: Unable to load GeoJSON data from the specified URL";
                     config["data"] = { features: [] };
@@ -58,6 +67,7 @@ function loadConfig(urltoload , data = null) {
                 });
         });
     } else {
+        hideLoadingWheel()
         return Promise.resolve(config);
     }
 
@@ -365,6 +375,7 @@ function loadConfig(urltoload , data = null) {
         config["popupTemplateMap"] = popupTemplateMap;
         config["data"] = data;
 
+        hideLoadingWheel()
         return config; 
     }
 }
