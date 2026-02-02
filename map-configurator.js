@@ -50,6 +50,139 @@ function loadInfoBlock(config, infoDivExpand, view) {
     if (config.content != null && config.content != "") {
         document.querySelector("#infoDiv").innerHTML += config.content;
     }
+
+    if(config.enableShareWidget && config.enableShareWidget === true){   
+        infoDiv.insertAdjacentHTML(
+        "beforeend",
+        `
+        <div id="share-this">
+            <h4>Share:</h4>
+            <div class="share-row">
+            <a id="share-facebook" class="facebook" target="_blank" title="Share on Facebook"><i class="fab fa-facebook-f"></i></a>
+            <a id="share-linkedin" class="linkedin" target="_blank" title="Share on LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+            <a id="share-whatsapp" class="whatsapp" target="_blank" title="Share on WhatsApp"><i class="fab fa-whatsapp"></i></a>
+            <a id="share-email" class="email" target="_blank" title="Send via Email"><i class="fas fa-envelope"></i></a>
+            <a id="share-download" class="download" title="Download"><i class="fas fa-download"></i></a>
+            <a id="share-code" class="code" href="#" title="Get Embed Code"><i class="fas fa-code"></i></a>
+            <a id="share-copy" class="copy" href="#" title="Copy Link"><i class="fas fa-link"></i></a>
+            </div>
+        </div>
+
+        <div id="codeModal" class="modal" aria-hidden="true" role="dialog" style="display:none">
+            <div class="modal-content">
+            <span class="close" aria-label="Close">&times;</span>
+            <h4>Embed this map:</h4>
+            <textarea readonly id="embed-snippet"></textarea>
+            <button id="copyCodeButton">Copy</button>
+            </div>
+        </div>
+        `
+        );
+        initShareWidget(config);
+    }
+}
+
+
+/**
+ * Initialise share widget links and behaviour.
+ *
+ * @param {Object} config User Configurations from JSON url input
+ */
+function initShareWidget(config) {
+    const elFacebook = document.getElementById("share-facebook");
+    const elLinkedIn = document.getElementById("share-linkedin");
+    const elWhatsApp = document.getElementById("share-whatsapp");
+    const elEmail = document.getElementById("share-email");
+    const elDownload = document.getElementById("share-download");
+    const elCode = document.getElementById("share-code");
+    const elCopy = document.getElementById("share-copy");
+
+    const modal = document.getElementById("codeModal");
+    const closeBtn = modal ? modal.querySelector(".close") : null;
+
+    const embedBox = document.getElementById("embed-snippet");
+    const copyCodeBtn = document.getElementById("copyCodeButton");
+
+    if (
+        !elFacebook ||
+        !elLinkedIn ||
+        !elWhatsApp ||
+        !elEmail ||
+        !elCode ||
+        !elCopy ||
+        !modal ||
+        !closeBtn ||
+        !embedBox ||
+        !copyCodeBtn
+    ) {
+        return;
+    }
+
+    // Copy helper with fallback
+    function copyText(text) {
+        if (navigator.clipboard && window.isSecureContext) {
+            return navigator.clipboard.writeText(text);
+        }
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.style.position = "fixed";
+        ta.style.left = "-9999px";
+        document.body.appendChild(ta);
+        ta.select();
+        try {
+            document.execCommand("copy");
+        } finally {
+            document.body.removeChild(ta);
+        }
+        return Promise.resolve();
+    }
+
+    const pageUrlRaw = window.location.href;
+    const pageUrl = encodeURIComponent(pageUrlRaw);
+    const pageTitle = encodeURIComponent(document.title || "Shared page");
+
+    // Share buttons
+    elFacebook.href = `https://www.facebook.com/sharer/sharer.php?u=${pageUrl}`;
+    elLinkedIn.href = `https://www.linkedin.com/sharing/share-offsite/?url=${pageUrl}`;
+    elWhatsApp.href = `https://api.whatsapp.com/send?text=${pageTitle}%20${pageUrl}`;
+    elEmail.href = `mailto:?subject=${pageTitle}&body=${pageTitle}%0A${pageUrl}`;
+    elDownload.href = config.titleLink;
+    embedBox.value = `<iframe src="${pageUrlRaw}" width="90%" height="400"></iframe>`;
+
+    // Modal open/close
+    elCode.addEventListener("click", (e) => {
+        e.preventDefault();
+        embedBox.value = `<iframe src="${window.location.href}" width="90%" height="400"></iframe>`;
+        modal.style.display = "block";
+    });
+    closeBtn.addEventListener("click", () => {
+        modal.style.display = "none";
+    });
+    window.addEventListener("click", (e) => {
+        if (e.target === modal) modal.style.display = "none";
+    });
+
+    // Copy embed snippet
+    copyCodeBtn.addEventListener("click", async function () {
+        await copyText(embedBox.value);
+        this.textContent = "Copied!";
+        setTimeout(() => {
+            this.textContent = "Copy";
+        }, 2000);
+    });
+
+    // Copy page link
+    elCopy.addEventListener("click", async function (e) {
+        e.preventDefault();
+        await copyText(window.location.href);
+        const icon = this.querySelector("i");
+        if (icon && icon.classList.contains("fa-link")) {
+            icon.classList.replace("fa-link", "fa-check");
+            setTimeout(() => {
+                icon.classList.replace("fa-check", "fa-link");
+            }, 2000);
+        }
+    });
 }
 
 /**

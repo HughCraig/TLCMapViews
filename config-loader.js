@@ -47,6 +47,7 @@ function loadConfig(urltoload , data = null) {
         textcontexts: null,
         datasetID: null,
         textID: null,
+        enableShareWidget: false,
     };
 
     if (data) {
@@ -130,6 +131,14 @@ function loadConfig(urltoload , data = null) {
                 //content
                 if (info.hasOwnProperty("content")) {
                     config["content"] = purifyContent(info.content);
+                }
+
+                //enableShareWidget
+                if (info.hasOwnProperty("enableShareWidget")) {
+                    config["enableShareWidget"] =
+                        typeof info.enableShareWidget === "boolean"
+                            ? info.enableShareWidget
+                            : false;
                 }
             }
 
