@@ -22,12 +22,12 @@ td {
     overflow-y: auto;
 }
 
-#infoDiv img{
+#infoDiv img {
     max-width: 100%;
     max-height: 100%;
 }
 
-.esri-widget__table img{
+.esri-widget__table img {
     max-width: 100%;
     max-height: 100%;
 }
@@ -65,7 +65,7 @@ img.mdicon {
 }
 
 #flybutton {
-    background-color: #F29469;
+    background-color: #f29469;
 }
 
 .warning-message {
@@ -74,17 +74,22 @@ img.mdicon {
     margin-bottom: 1em;
 }
 
-
 /* Base style for input fields */
-#latitudeInput, #longitudeInput {
+#latitudeInput,
+#longitudeInput {
     border: 1px solid #ccc;
     outline: none;
 }
 
 /* CSS for the blinking highlight using outline */
 @keyframes blinkRed {
-    0%, 100% { outline: 2px solid transparent; }
-    50% { outline: 2px solid red; }
+    0%,
+    100% {
+        outline: 2px solid transparent;
+    }
+    50% {
+        outline: 2px solid red;
+    }
 }
 
 .blink {
@@ -111,6 +116,136 @@ img.mdicon {
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+body {
+    font-family:
+        system-ui,
+        -apple-system,
+        Segoe UI,
+        Roboto,
+        Arial,
+        sans-serif;
+    margin: 24px;
+}
+
+/* Share widget */
+#share-this {
+    max-width: 100%;
+    margin-bottom: 20px;
+}
+
+#share-this h4 {
+    margin: 0 0 8px 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.share-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.share-row a {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 25px;
+    height: 25px;
+    border-radius: 50%;
+    color: #fff;
+    font-size: 14px;
+    transition:
+        transform 0.2s ease,
+        opacity 0.2s ease;
+    text-decoration: none;
+}
+
+.share-row a:hover {
+    opacity: 0.85;
+    transform: scale(1.1);
+}
+
+/* Button colors */
+.facebook {
+    background: #3b5998;
+}
+
+.linkedin {
+    background: #0077b5;
+}
+
+.whatsapp {
+    background: #25d366;
+}
+
+.email {
+    background: #777;
+}
+
+.download {
+    background: #444;
+}
+
+.code {
+    background: #ff9800;
+}
+
+.copy {
+    background: #009688;
+}
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+}
+
+.modal-content {
+    background-color: #fff;
+    margin: 10% auto;
+    padding: 16px;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 480px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    font-size: 0.9rem;
+}
+
+.modal .close {
+    float: right;
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+#embed-snippet {
+    width: 100%;
+    height: 100px;
+    margin-top: 10px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    padding: 8px;
+    font-size: 0.8rem;
+}
+
+#copyCodeButton {
+    margin-top: 8px;
+    padding: 6px 10px;
+    cursor: pointer;
+    border: 1px solid #ccc;
+    background: #f6f6f6;
+    border-radius: 4px;
+    font-size: 0.8rem;
 }

@@ -34,6 +34,7 @@ function loadCollectionConfig(urltoload) {
         basemap: "hybrid",
         listPane: "default",
         datasetsConfig: [],
+        enableShareWidget: false,
     };
 
     if (urltoload == null) {
@@ -95,6 +96,14 @@ function loadCollectionConfig(urltoload) {
                         //content
                         if (info.hasOwnProperty("content")) {
                             config["content"] = purifyContent(info.content);
+                        }
+
+                        //enableShareWidget
+                        if (info.hasOwnProperty("enableShareWidget")) {
+                            config["enableShareWidget"] =
+                                typeof info.enableShareWidget === "boolean"
+                                    ? info.enableShareWidget
+                                    : false;
                         }
 
                         //legend
