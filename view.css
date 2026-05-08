@@ -7,6 +7,10 @@ body,
     width: 100%;
 }
 
+body{
+    margin: 0 !important;
+}
+
 td {
     vertical-align: top;
 }
