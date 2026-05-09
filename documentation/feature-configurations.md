@@ -175,6 +175,28 @@ Block some feature properties from displaying:
 }
 ```
 
+Set the `allowedFields` to `["*"]` to display all feature properties. This is useful for overriding an
+`allowedFields` whitelist set on the parent `FeatureCollection` and showing every property for a particular
+feature:
+
+```json
+{
+    "type": "Feature",
+    "display": {
+        "popup": {
+            "title": "{title}",
+            "allowedFields": ["*"]
+        }
+    },
+    "properties": {
+        "title": "A place I visited",
+        "date": "2002-05-06",
+        "summary": "The beach was a wonderland of white sand and crystal-clear water. The sun was shining brightly in the sky, and the waves were crashing against the shore.",
+        "city": "Sydney"
+    }
+}
+```
+
 Set the `allowedFields` to an empty array to remove the property table from the popup display completely:
 
 ```json

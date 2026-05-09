@@ -1,6 +1,6 @@
 # Views
 
-The library’s views are available at `https://views.tlcmap.org/v2/`. To use a view, the GeoJSON data MUST be hosted and
+The library’s views are available at `https://views.tlcmap.org/latest/`. To use a view, the GeoJSON data MUST be hosted and
 have a web URL. The view can then load the GeoJSON data by specifying its URL in the `load` parameter of the view’s URL
 query string. The URL of the GeoJSON feed SHOULD be encoded, especially in the case of multiple parameters exist in the
 URL query string.
@@ -10,26 +10,26 @@ For example:
 The URL of the GeoJSON feed is:
 
 ```
-https://ghap.tlcmap.org/publicdatasets/247/json
+https://tlcmap.org/multilayers/38/json
 ```
 
 To use the 3D view, the URL would be:
 
 ```
-https://views.tlcmap.org/v2/3d.html?load=https%3A%2F%2Fghap.tlcmap.org%2Fpublicdatasets%2F247%2Fjson
+https://views.tlcmap.org/latest/3d.html?load=https%3A%2F%2Ftlcmap.org%2Flayers%2F80%2Fjson
 ```
 
 The view can be embedded to web pages using `<iframe>`:
 
 ```html
-<iframe src="https://views.tlcmap.org/v2/3d.html?load=https%3A%2F%2Fghap.tlcmap.org%2Fpublicdatasets%2F247%2Fjson"
+<iframe src="https://views.tlcmap.org/latest/3d.html?load=https%3A%2F%2Ftlcmap.org%2Flayers%2F80%2Fjson"
         width="1000" height="700" frameborder="0" scrolling="no"></iframe>
 ```
 
 ## 3D view
 
 ```
-https://views.tlcmap.org/v2/3d.html
+https://views.tlcmap.org/latest/3d.html
 ```
 
 ![3D view](./images/3d-view.png)
@@ -40,7 +40,7 @@ features from the GeoJSON feed as point markers in the map.
 ## Cluster view
 
 ```
-https://views.tlcmap.org/v2/cluster.html
+https://views.tlcmap.org/latest/cluster.html
 ```
 
 ![Cluster view](./images/cluster-view.png)
@@ -51,7 +51,7 @@ it. This map is best for large amounts of data, or large search results, or if p
 ## Journey view
 
 ```
-https://views.tlcmap.org/v2/journey.html
+https://views.tlcmap.org/latest/journey.html
 ```
 
 ![Journey view](./images/journey-view.png)
@@ -173,7 +173,7 @@ For example:
 ## Timeline view
 
 ```
-https://views.tlcmap.org/v2/timeline.html
+https://views.tlcmap.org/latest/timeline.html
 ```
 
 ![Timeline view](./images/timeline-view.png)
@@ -217,7 +217,7 @@ For example, to set a place with start date `1902-07-28` and end date `1959-08-0
 ## Werekata view
 
 ```
-https://views.tlcmap.org/v2/werekata.html
+https://views.tlcmap.org/latest/werekata.html
 ```
 
 ![Werekata view](./images/werekata-view.png)

@@ -70,7 +70,7 @@ Set the info block logo:
     "type": "FeatureCollection",
     "display": {
         "info": {
-            "logo": "https://views.tlcmap.org/img/tlcmaplogofull_sm50.png"
+            "logo": "https://views.tlcmap.org/latest/img/tlcmaplogofull_sm50.png"
         }
     }
 }
@@ -90,7 +90,7 @@ Set a plain text title:
     "type": "FeatureCollection",
     "display": {
         "info": {
-            "title": "13 AusStage venues"
+            "title": "WA Aboriginal Journey Ways"
         }
     }
 }
@@ -104,8 +104,27 @@ Set a linked title:
     "display": {
         "info": {
             "title": {
-                "text": "13 AusStage venues",
-                "link": "https://ghap.tlcmap.org/publicdatasets/247"
+                "text": "WA Aboriginal Journey Ways",
+                "link": "https://tlcmap.org/multilayers/38"
+            }
+        }
+    }
+}
+```
+
+The link object also supports an optional `target` property to control how the link opens. The default value
+is `_blank`. See the [MDN documentation](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/a) for valid
+`target` values.
+
+```json
+{
+    "type": "FeatureCollection",
+    "display": {
+        "info": {
+            "title": {
+                "text": "WA Aboriginal Journey Ways",
+                "link": "https://tlcmap.org/multilayers/38",
+                "target": "_self"
             }
         }
     }
@@ -132,13 +151,34 @@ Set the content in HTML of the info block:
 }
 ```
 
+### Share widget
+
+A share widget can be displayed at the bottom of the info block to allow users to share the map via Facebook,
+LinkedIn, WhatsApp, or email, download the source data, get an embed code, or copy the page link. The widget is
+disabled by default. Set `enableShareWidget` to `true` in the info block settings to enable it.
+
+Example:
+
+Enable the share widget:
+
+```json
+{
+    "type": "FeatureCollection",
+    "display": {
+        "info": {
+            "enableShareWidget": true
+        }
+    }
+}
+```
+
 ### Restricted HTML
 
 Any HTML from the GeoJSON data for rendering will go through a number of HTML filters before displaying. Other HTML tags
 or attributes except the following will be stripped out from the rendered HTML.
 
 ```
-p a[href|target] strong em ul ol li div[class] br table tr td th tbody thead tfoot
+p a[href|target] strong em ul ol li div[class] br table tr td th tbody thead tfoot img[src|alt]
 ```
 
 ## Base map gallery
@@ -237,6 +277,24 @@ Set the cluster number to white:
     "type": "FeatureCollection",
     "display": {
         "clusterFontColor": "white"
+    }
+}
+```
+
+### Popup title
+
+The title of the popup displayed when clicking on a cluster can be set via the `clusterPopupTitle` property. The
+default value is `Cluster summary`.
+
+Example:
+
+Set a custom cluster popup title:
+
+```json
+{
+    "type": "FeatureCollection",
+    "display": {
+        "clusterPopupTitle": "Places in this area"
     }
 }
 ```

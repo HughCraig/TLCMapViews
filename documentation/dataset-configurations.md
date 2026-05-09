@@ -22,8 +22,8 @@ Example:
     },
     "datasets": [
         {
-            "name": "Deep time - Aboriginal and Torres Strait Islander History",
-            "jsonURL": "https://ghap.tlcmap.org/publicdatasets/239/json",
+            "name": "WA Aboriginal Journey Ways",
+            "jsonURL": "https://tlcmap.org/multilayers/38/json",
             "display": {
                 "color": "#000000"
             }
@@ -60,8 +60,8 @@ Example:
     },
     "datasets": [
         {
-            "name": "Deep time - Aboriginal and Torres Strait Islander History",
-            "jsonURL": "https://ghap.tlcmap.org/publicdatasets/239/json",
+            "name": "WA Aboriginal Journey Ways",
+            "jsonURL": "https://tlcmap.org/multilayers/38/json",
             "display": {
                 "listPane": {
                     "showColor": true
@@ -89,12 +89,12 @@ Example:
     },
     "datasets": [
         {
-            "name": "Deep time - Aboriginal and Torres Strait Islander History",
-            "jsonURL": "https://ghap.tlcmap.org/publicdatasets/239/json",
+            "name": "WA Aboriginal Journey Ways",
+            "jsonURL": "https://tlcmap.org/multilayers/38/json",
             "display": {
                 "listPane": {
                     "showColor": true,
-                    "content": "<p>Some important people and events in the history of Aboriginal and Torres Strait Islander sport. This isn't a complete list but is a good place to start.</p><p><a href=\"https://ghap.tlcmap.org/publicdatasets/239\" target=\"_blank\">View more details</a></p>"
+                    "content": "<div class=\"warning-message\"><strong>Warning</strong><br>This layer contains historical information about Aboriginal people that may be distressing. It contains names of people who have passed away.</div><div>Before, and for some time after the 1967 referendum Aboriginal people were subjected to law and social policy that controlled every aspect of their lives. They were excluded from all the supports (hospitals and public housing) and payments (wages, pensions, dole, child benefit) given to non-Aboriginal people. They were subjected to curfews and condemned to absolute poverty. Many lived in ancient camping grounds or reserved lands until they were cleared out.</div><p><a target=\"_blank\" href=\"https://tlcmap.org/publicdatasets/258\">View layer details</a></p>"
                 }
             }
         }

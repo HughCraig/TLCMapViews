@@ -1,6 +1,6 @@
 # TLCMap Views Documentation
 
-Version: 2.0
+Version: v2.0.3
 
 TLCMap Views is a library that provides various map visualisations for displaying GeoJSON data. It allows users to
 explore the spatial and attribute information of geographic features on maps. This document provides overview technical

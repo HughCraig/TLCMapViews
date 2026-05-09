@@ -5,13 +5,13 @@ with a unique color. And a legend is generated which lists each dataset inside c
 
 All views documented above have the corresponding collection views, which are described in the following table.
 
-| Collection View | URL                                                      |
-| --------------- | -------------------------------------------------------- |
-| 3D view         | `https://views.tlcmap.org/v2/collection-3d.html`         |
-| Cluster view    | `https://views.tlcmap.org/v2/collection-cluster.html`    |
-| Journey view    | `https://views.tlcmap.org/v2/collection-journey.html`    |
-| Timeline view   | `https://views.tlcmap.org/v2/collection-timeline.html`   |
-| Werekata view   | `https://views.tlcmap.org/v2/collection-werekata.html`   |
+| Collection View | URL                                                          |
+| --------------- | -------------------------------------------------------------|
+| 3D view         | `https://views.tlcmap.org/latest/collection-3d.html`         |
+| Cluster view    | `https://views.tlcmap.org/latest/collection-cluster.html`    |
+| Journey view    | `https://views.tlcmap.org/latest/collection-journey.html`    |
+| Timeline view   | `https://views.tlcmap.org/latest/collection-timeline.html`   |
+| Werekata view   | `https://views.tlcmap.org/latest/collection-werekata.html`   |
 
 ## Collection data feed
 
@@ -19,30 +19,61 @@ Similar to other views, collection views read the collection data through the pa
 string. For example:
 
 ```
-https://views.tlcmap.org/v2/collection-3d.html?load=https%3A%2F%2Fghap.tlcmap.org%2Fpubliccollections%2F6%2Fjson
+https://views.tlcmap.org/latest/collection-3d.html?load=https%3A%2F%2Ftlcmap.org%2Fmultilayers%2F6%2Fjson
+
 ```
 
 A collection data feed is the JSON data describing the collection. The minimum requirement of the collection data feed
 is to have the `datasets` property defined. The value of the `datasets` property is an array which contains a list of
 dataset objects. Each dataset object MUST contain the `name` of the dataset, which is used to generate the legend.
-It also MUST have the `jsonURL` of the GeoJSON feed for that dataset.
 
-For example, a minimum collection data feed:
+Each dataset object MUST also provide its GeoJSON data using one of the following:
+
+- `jsonURL`: a URL pointing to the GeoJSON feed for the dataset, OR
+- `features`: the GeoJSON `Feature` array embedded directly in the dataset object (along with any other GeoJSON
+  members such as `type`, `metadata`, or `display`).
+
+For example, a minimum collection data feed using `jsonURL`:
 
 ```json
 {
     "datasets": [
         {
-            "name": "Deep time - Aboriginal and Torres Strait Islander History",
-            "jsonURL": "https://ghap.tlcmap.org/publicdatasets/239/json"
+            "name": "WA Aboriginal Journey Ways",
+            "jsonURL": "https://tlcmap.org/multilayers/38/json"
         },
         {
-            "name": "Politics and Law - Aboriginal and Torres Strait Islander History",
-            "jsonURL": "https://ghap.tlcmap.org/publicdatasets/238/json"
+            "name": "Early Land Exploration",
+            "jsonURL": "https://tlcmap.org/multilayers/37/json"
         },
         {
-            "name": "Film - Aboriginal and Torres Strait Islander History",
-            "jsonURL": "https://ghap.tlcmap.org/publicdatasets/236/json"
+            "name": "Second Dispossession: NSW Rail and the Aboriginal Protection Board",
+            "jsonURL": "https://tlcmap.org/multilayers/42/json"
+        }
+    ]
+}
+```
+
+A collection data feed embedding GeoJSON directly in the dataset object:
+
+```json
+{
+    "datasets": [
+        {
+            "name": "Places I visited",
+            "type": "FeatureCollection",
+            "features": [
+                {
+                    "type": "Feature",
+                    "geometry": {
+                        "type": "Point",
+                        "coordinates": [151.2094444, -33.865]
+                    },
+                    "properties": {
+                        "name": "Sydney"
+                    }
+                }
+            ]
         }
     ]
 }
@@ -61,16 +92,16 @@ For example:
     },
     "datasets": [
         {
-            "name": "Deep time - Aboriginal and Torres Strait Islander History",
-            "jsonURL": "https://ghap.tlcmap.org/publicdatasets/239/json"
+            "name": "WA Aboriginal Journey Ways",
+            "jsonURL": "https://tlcmap.org/multilayers/38/json"
         },
         {
-            "name": "Politics and Law - Aboriginal and Torres Strait Islander History",
-            "jsonURL": "https://ghap.tlcmap.org/publicdatasets/238/json"
+            "name": "Early Land Exploration",
+            "jsonURL": "https://tlcmap.org/multilayers/37/json"
         },
         {
-            "name": "Film - Aboriginal and Torres Strait Islander History",
-            "jsonURL": "https://ghap.tlcmap.org/publicdatasets/236/json"
+            "name": "Second Dispossession: NSW Rail and the Aboriginal Protection Board",
+            "jsonURL": "https://tlcmap.org/multilayers/42/json"
         }
     ]
 }

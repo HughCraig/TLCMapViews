@@ -20,9 +20,10 @@ are specified in the collection data feed.
 ## Info block configurations
 
 All [info block configurations](./global-configurations.md#info-block-configurations) still can apply to collection
-views. In this case, the info block configurations are set in the collection data feed rather than the GeoJSON feed of
-an individual dataset. When a collection of datasets is loaded by a collection view, all info block configurations set
-in the individual dataset will be ignored.
+views, including the [share widget](./global-configurations.md#share-widget). In this case, the info block
+configurations are set in the collection data feed rather than the GeoJSON feed of an individual dataset. When a
+collection of datasets is loaded by a collection view, all info block configurations set in the individual dataset will
+be ignored.
 
 Example:
 
@@ -38,7 +39,7 @@ Example:
         "info": {
             "title": {
                 "text": "Aboriginal and Torres Strait Islander History",
-                "link": "https://ghap.tlcmap.org/publiccollections/6"
+                "link": "https://tlcmap.org/publiccollections/6"
             },
             "content": "<p>Some important people and events in the history of Aboriginal and Torres Strait Islander people. This isn't a complete list but is a good place to start.</p>"
         }
